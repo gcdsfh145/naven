@@ -89,7 +89,7 @@ public class ModuleManager {
                 new AimAssist(),
                 new MotionBlur(),
                 new Helper(),
-                //new NoSlow(),
+                new NoSlow(),
                 new LongJump(),
                 new SafeMode(),
                 //new Critical(),

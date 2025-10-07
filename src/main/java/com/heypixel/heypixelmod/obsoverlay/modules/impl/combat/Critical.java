@@ -5,34 +5,35 @@ import com.heypixel.heypixelmod.obsoverlay.events.impl.EventRunTicks;
 import com.heypixel.heypixelmod.obsoverlay.modules.Category;
 import com.heypixel.heypixelmod.obsoverlay.modules.Module;
 import com.heypixel.heypixelmod.obsoverlay.modules.ModuleInfo;
-import com.heypixel.heypixelmod.obsoverlay.utils.StrafeEvent;
 import com.heypixel.heypixelmod.obsoverlay.values.ValueBuilder;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.BooleanValue;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.FloatValue;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.ModeValue;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Timer;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.core.particles.ParticleOptions;
+
+import java.lang.reflect.Field;
 
 @ModuleInfo(
         name = "Critical",
-        description = "Critical",
+        description = "Automatically performs critical hits",
         category = Category.COMBAT
 )
 public class Critical extends Module {
-    // 原有模式 + Grim 模式
     ModeValue mode = ValueBuilder.create(this, "mode")
             .setDefaultModeIndex(0)
             .setModes("Jump", "MiniJump", "Packet", "GrimStuck", "GrimTimer")
             .build()
             .getModeValue();
 
-    // GrimStuck 专用设置
     BooleanValue fire = ValueBuilder.create(this, "Fire").setDefaultBooleanValue(false).build().getBooleanValue();
 
-    // GrimTimer 专用设置
     FloatValue idleTime_Value = ValueBuilder.create(this, "Idle Time")
             .setDefaultFloatValue(250.0F)
             .setFloatStep(10.0F)
@@ -52,20 +53,135 @@ public class Critical extends Module {
     BooleanValue autoJump = ValueBuilder.create(this, "Auto Jump").setDefaultBooleanValue(true).build().getBooleanValue();
     BooleanValue C03 = ValueBuilder.create(this, "Send C03").setDefaultBooleanValue(true).build().getBooleanValue();
 
-    // 原有字段
     private boolean attacking;
     private int criticalTicks = 0;
     private boolean shouldCritical = false;
 
-    // 新增 Grim 字段
     private boolean start = false;
     private long lastMsTimer = 0;
+
+    private static final Minecraft mc = Minecraft.getInstance();
+
+    public static Timer getTimer() {
+        if (mc == null) return null;
+        try {
+            Field timerField = Minecraft.class.getDeclaredField("timer");
+            timerField.setAccessible(true);
+            return (Timer) timerField.get(mc);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void setMsPerTick(Timer timer, float msPerTick) {
+        if (timer == null) return;
+        try {
+            Field msPerTickField = Timer.class.getDeclaredField("msPerTick");
+            msPerTickField.setAccessible(true);
+            msPerTickField.setFloat(timer, msPerTick);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static double getXLast() {
+        if (mc.player == null) return 0.0D;
+        try {
+            Field xLastField = net.minecraft.world.entity.player.Player.class.getDeclaredField("xOld");
+            xLastField.setAccessible(true);
+            return xLastField.getDouble(mc.player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0D;
+        }
+    }
+
+    public static double getYLast() {
+        if (mc.player == null) return 0.0D;
+        try {
+            Field yLastField = net.minecraft.world.entity.player.Player.class.getDeclaredField("yOld");
+            yLastField.setAccessible(true);
+            return yLastField.getDouble(mc.player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0D;
+        }
+    }
+
+    public static double getZLast() {
+        if (mc.player == null) return 0.0D;
+        try {
+            Field zLastField = net.minecraft.world.entity.player.Player.class.getDeclaredField("zOld");
+            zLastField.setAccessible(true);
+            return zLastField.getDouble(mc.player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0D;
+        }
+    }
+
+    public static float getYRotLast() {
+        if (mc.player == null) return 0.0F;
+        try {
+            Field yRotLastField = net.minecraft.world.entity.player.Player.class.getDeclaredField("yRotO");
+            yRotLastField.setAccessible(true);
+            return yRotLastField.getFloat(mc.player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0F;
+        }
+    }
+
+    public static float getXRotLast() {
+        if (mc.player == null) return 0.0F;
+        try {
+            Field xRotLastField = net.minecraft.world.entity.player.Player.class.getDeclaredField("xRotO");
+            xRotLastField.setAccessible(true);
+            return xRotLastField.getFloat(mc.player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0F;
+        }
+    }
+
+    public static int getSkipTicks() {
+        return 0;
+    }
+
+    public static void setSkipTicks(int skipTicks) {
+    }
+
+    public static int getOffGroundTicks() {
+        if (mc.player == null) return 0;
+        return mc.player.onGround() ? 0 : 1;
+    }
+
+    public static void spawnLegacyParticles(Entity entity, ParticleOptions particleType) {
+        RandomSource random = entity.level().getRandom();
+        for (int i = 0; i < 16; i++) {
+            double offsetX = (random.nextDouble() * 2 - 1) * entity.getBbWidth() / 4.0;
+            double offsetY = (random.nextDouble() * 2 - 1) * entity.getBbHeight() / 4.0;
+            double offsetZ = (random.nextDouble() * 2 - 1) * entity.getBbWidth() / 4.0;
+
+            if (offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ <= 1.0) {
+                double posX = entity.getX() + offsetX;
+                double posY = entity.getY() + entity.getBbHeight() / 2 + offsetY;
+                double posZ = entity.getZ() + offsetZ;
+
+                double speedX = offsetX;
+                double speedY = offsetY + 0.2;
+                double speedZ = offsetZ;
+
+                entity.level().addParticle(particleType, posX, posY, posZ, speedX, speedY, speedZ);
+            }
+        }
+    }
 
     @EventTarget
     public void onMotion(EventRunTicks event) {
         this.setSuffix(mode.getCurrentMode());
 
-        // 原有逻辑
         if (shouldCritical && criticalTicks > 0) {
             performCritical();
             criticalTicks--;
@@ -75,7 +191,6 @@ public class Critical extends Module {
             }
         }
 
-        // 新增 Grim 逻辑
         if (mc.player == null || mc.level == null) return;
 
         switch (mode.getCurrentMode()) {
@@ -98,38 +213,9 @@ public class Critical extends Module {
                 criticalTicks = 3;
             }
 
-            // Grim 模式攻击检测
             if (mode.getCurrentMode().equals("GrimStuck") || mode.getCurrentMode().equals("GrimTimer")) {
                 start = true;
             }
-        }
-    }
-
-    @EventTarget
-    public void onPacket(NetworkEvent.ServerCustomPayloadEvent event) {
-        if (event.getPayload() instanceof ServerboundInteractPacket packet && this.isEnabled()) {
-            if (WrapperUtils.isAttackAction(packet)) {
-                start = true;
-            }
-        }
-    }
-
-    @EventTarget
-    public void onStrafe(StrafeEvent event){
-        if (attacking && mc.player.onGround()) {
-            switch (mode.getCurrentMode()) {
-                case "Jump":
-                    mc.player.jumpFromGround();
-                    break;
-                case "MiniJump":
-                    mc.player.setDeltaMovement(mc.player.getDeltaMovement().x, 0.25, mc.player.getDeltaMovement().z);
-                    break;
-                case "Packet":
-                    mc.player.setOnGround(false);
-                    break;
-                // Grim 模式不在此处理
-            }
-            attacking = false;
         }
     }
 
@@ -145,32 +231,29 @@ public class Critical extends Module {
                 case "Packet":
                     mc.player.setOnGround(false);
                     break;
-                // Grim 模式不在此处理
             }
         }
     }
 
     private void handleGrimStuckLogic() {
-        // 火焰粒子效果
-        if (fire.getValue() && start && WrapperUtils.getOffGroundTicks() > 3) {
+        if (fire.getCurrentValue() && start && getOffGroundTicks() > 3) {
             if (System.currentTimeMillis() - lastMsTimer >= 500L) {
                 for (int i = 0; i <= 8; i++) {
-                    if (KillAura.target != null) {
-                        WrapperUtils.spawnLegacyParticles(KillAura.target, ParticleTypes.FLAME);
+                    if (Aura.target != null) {
+                        spawnLegacyParticles(Aura.target, ParticleTypes.FLAME);
                     }
                 }
                 lastMsTimer = System.currentTimeMillis();
             }
         }
 
-        // 位置同步逻辑
-        if (KillAura.target != null && start) {
-            if (mc.player.fallDistance > 0 || WrapperUtils.getOffGroundTicks() > 3) {
-                double d0 = mc.player.getX() - WrapperUtils.getXLast();
-                double d1 = mc.player.getY() - WrapperUtils.getYLast();
-                double d2 = mc.player.getZ() - WrapperUtils.getZLast();
-                double d3 = (KillAura.INSTANCE.rotation_[0] - WrapperUtils.getYRotLast());
-                double d4 = (KillAura.INSTANCE.rotation_[1] - WrapperUtils.getXRotLast());
+        if (Aura.target != null && start) {
+            if (mc.player.fallDistance > 0 || getOffGroundTicks() > 3) {
+                double d0 = mc.player.getX() - getXLast();
+                double d1 = mc.player.getY() - getYLast();
+                double d2 = mc.player.getZ() - getZLast();
+                double d3 = (mc.player.getYRot() - getYRotLast());
+                double d4 = (mc.player.getXRot() - getXRotLast());
 
                 boolean positionChanged = d0 * d0 + d1 * d1 + d2 * d2 > 9.0E-4D;
                 boolean rotationChanged = d3 != 0.0D || d4 != 0.0D;
@@ -178,17 +261,17 @@ public class Critical extends Module {
                 if (positionChanged && rotationChanged) {
                     sendPositionPacket(ServerboundMovePlayerPacket.PosRot.class,
                             mc.player.getX(), mc.player.getY() - 0.03, mc.player.getZ(),
-                            KillAura.INSTANCE.rotation_[0], KillAura.INSTANCE.rotation_[1]);
+                            mc.player.getYRot(), mc.player.getXRot());
                 } else if (positionChanged) {
                     sendPositionPacket(ServerboundMovePlayerPacket.Pos.class,
                             mc.player.getX(), mc.player.getY() - 0.03, mc.player.getZ());
                 } else if (rotationChanged) {
                     sendPositionPacket(ServerboundMovePlayerPacket.Rot.class,
-                            KillAura.INSTANCE.rotation_[0], KillAura.INSTANCE.rotation_[1]);
+                            mc.player.getYRot(), mc.player.getXRot());
                 } else {
                     mc.player.connection.send(new ServerboundMovePlayerPacket.StatusOnly(false));
                 }
-                WrapperUtils.setSkipTicks(WrapperUtils.getSkipTicks() + 1);
+                setSkipTicks(getSkipTicks() + 1);
             }
         } else {
             start = false;
@@ -196,37 +279,33 @@ public class Critical extends Module {
     }
 
     private void handleGrimTimerLogic() {
-        // 地面自动跳跃
-        if (KillAura.target != null && mc.player.onGround()) {
-            if (autoJump.getValue()) {
+        if (Aura.target != null && mc.player.onGround()) {
+            if (autoJump.getCurrentValue()) {
                 mc.options.keyJump.setDown(true);
             }
-            WrapperUtils.setMsPerTick(WrapperUtils.getTimer(), 50F);
+            setMsPerTick(getTimer(), 50F);
         }
 
-        // 空中速度控制
-        if (KillAura.target != null && !mc.player.onGround()) {
+        if (Aura.target != null && !mc.player.onGround()) {
             mc.options.keySprint.setDown(false);
             double fallDistance = mc.player.fallDistance;
             double maxFallDistance = getMaxFallDistance();
 
             if (fallDistance > 0 && fallDistance < maxFallDistance / 2) {
-                WrapperUtils.setMsPerTick(WrapperUtils.getTimer(), idleTime_Value.getValue());
-                if (C03.getValue()) sendC03Packet(true);
-            } else if (fallDistance >= maxFallDistance / downHeight_Value.getValue()) {
-                WrapperUtils.setMsPerTick(WrapperUtils.getTimer(), 50F);
+                setMsPerTick(getTimer(), idleTime_Value.getCurrentValue());
+                if (C03.getCurrentValue()) sendC03Packet(true);
+            } else if (fallDistance >= maxFallDistance / downHeight_Value.getCurrentValue()) {
+                setMsPerTick(getTimer(), 50F);
             }
-            if (C03.getValue()) sendC03Packet(false);
+            if (C03.getCurrentValue()) sendC03Packet(false);
         }
 
-        // 状态恢复
         if (mc.player.onGround() || mc.player.hurtTime > 0) {
-            WrapperUtils.setMsPerTick(WrapperUtils.getTimer(), 50F);
+            setMsPerTick(getTimer(), 50F);
         }
     }
 
     private double getMaxFallDistance() {
-        // 简单的最大下落距离计算，可以根据需要调整
         return 3.0;
     }
 
@@ -263,12 +342,10 @@ public class Critical extends Module {
         criticalTicks = 0;
         start = false;
 
-        // 重置 Grim 相关状态
-        if (WrapperUtils.getTimer() != null) {
-            WrapperUtils.setMsPerTick(WrapperUtils.getTimer(), 50F); // 重置计时器
+        if (getTimer() != null) {
+            setMsPerTick(getTimer(), 50F);
         }
 
-        // 重置按键状态
         mc.options.keyJump.setDown(false);
         mc.options.keySprint.setDown(true);
     }

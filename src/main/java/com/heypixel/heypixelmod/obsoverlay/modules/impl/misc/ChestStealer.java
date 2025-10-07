@@ -9,13 +9,14 @@ import com.heypixel.heypixelmod.obsoverlay.modules.Category;
 import com.heypixel.heypixelmod.obsoverlay.modules.Module;
 import com.heypixel.heypixelmod.obsoverlay.modules.ModuleInfo;
 import com.heypixel.heypixelmod.obsoverlay.modules.impl.move.Scaffold;
-import com.heypixel.heypixelmod.obsoverlay.utils.*;
+import com.heypixel.heypixelmod.obsoverlay.utils.InventoryUtils;
+import com.heypixel.heypixelmod.obsoverlay.utils.TickTimeHelper;
+import com.heypixel.heypixelmod.obsoverlay.utils.ProjectionUtils;
+import com.heypixel.heypixelmod.obsoverlay.utils.Vector2f;
 import com.heypixel.heypixelmod.obsoverlay.utils.renderer.Fonts;
 import com.heypixel.heypixelmod.obsoverlay.values.ValueBuilder;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.BooleanValue;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.FloatValue;
-import org.apache.commons.lang3.RandomUtils;
-
 import java.awt.Color;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Collections;
@@ -49,28 +50,18 @@ import net.minecraft.world.phys.Vec3;
         category = Category.MISC
 )
 public class ChestStealer extends Module {
-    private static final MSTimers timer = new MSTimers();
-
-    private final FloatValue MinDelay = ValueBuilder.create(this, "MinDelay")
-            .setDefaultFloatValue(200)
-            .setFloatStep(10)
-            .setMinFloatValue(0)
-            .setMaxFloatValue(600)
+    private static final TickTimeHelper timer = new TickTimeHelper();
+    private final FloatValue delay = ValueBuilder.create(this, "Delay (Ticks)")
+            .setDefaultFloatValue(3.0F)
+            .setFloatStep(1.0F)
+            .setMinFloatValue(3.0F)
+            .setMaxFloatValue(10.0F)
             .build()
             .getFloatValue();
-
-    private final FloatValue MaxDelay = ValueBuilder.create(this, "MaxDelay")
-            .setDefaultFloatValue(200)
-            .setFloatStep(10)
-            .setMinFloatValue(0)
-            .setMaxFloatValue(600)
-            .build()
-            .getFloatValue();
-
     private final BooleanValue pickEnderChest = ValueBuilder.create(this, "Ender Chest").setDefaultBooleanValue(false).build().getBooleanValue();
     private Screen lastTickScreen;
+
     private final CopyOnWriteArrayList<ChestInfo> chests = new CopyOnWriteArrayList<>();
-    private float nextClickDelay = 0F;
 
     public static boolean isWorking() {
         return !timer.delay(3);
@@ -84,7 +75,6 @@ public class ChestStealer extends Module {
                 ChestMenu menu = (ChestMenu)container.getMenu();
                 if (currentScreen != this.lastTickScreen) {
                     timer.reset();
-                    nextClickDelay = RandomUtils.nextFloat(MinDelay.getCurrentValue(), MaxDelay.getCurrentValue());
                 } else {
                     String chestTitle = container.getTitle().getString();
                     String chest = Component.translatable("container.chest").getString();
@@ -94,20 +84,17 @@ public class ChestStealer extends Module {
                             || chestTitle.equals(largeChest)
                             || chestTitle.equals("Chest")
                             || this.pickEnderChest.getCurrentValue() && chestTitle.equals(enderChest)) {
-                        if (this.isChestEmpty(menu) && timer.delay(nextClickDelay)) {
+                        if (this.isChestEmpty(menu) && timer.delay(this.delay.getCurrentValue())) {
                             mc.player.closeContainer();
-                            timer.reset();
-                            nextClickDelay = RandomUtils.nextFloat(MinDelay.getCurrentValue(), MaxDelay.getCurrentValue());
                         } else {
                             List<Integer> slots = IntStream.range(0, menu.getRowCount() * 9).boxed().collect(Collectors.toList());
                             Collections.shuffle(slots);
 
                             for (Integer pSlotId : slots) {
                                 ItemStack stack = menu.getSlot(pSlotId).getItem();
-                                if (isItemUseful(stack) && this.isBestItemInChest(menu, stack) && timer.delay(nextClickDelay)) {
+                                if (isItemUseful(stack) && this.isBestItemInChest(menu, stack) && timer.delay(this.delay.getCurrentValue())) {
                                     mc.gameMode.handleInventoryMouseClick(menu.containerId, pSlotId, 0, ClickType.QUICK_MOVE, mc.player);
                                     timer.reset();
-                                    nextClickDelay = RandomUtils.nextFloat(MinDelay.getCurrentValue(), MaxDelay.getCurrentValue());
                                     break;
                                 }
                             }
@@ -120,6 +107,7 @@ public class ChestStealer extends Module {
         }
     }
 
+    // 添加 Chest 显示相关事件
     @EventTarget
     public void onUpdate(EventRender event) {
         this.chests.clear();
@@ -250,6 +238,7 @@ public class ChestStealer extends Module {
         }
     }
 
+    // 添加 ChestInfo 内部类
     private static class ChestInfo {
         private BlockPos blockPos;
         private Vector2f screenPos;
