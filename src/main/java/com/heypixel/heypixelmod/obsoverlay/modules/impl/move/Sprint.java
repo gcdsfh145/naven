@@ -1,13 +1,11 @@
 package com.heypixel.heypixelmod.obsoverlay.modules.impl.move;
 
-import com.heypixel.heypixelmod.obsoverlay.Naven;
 import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
 import com.heypixel.heypixelmod.obsoverlay.events.api.types.EventType;
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventMotion;
 import com.heypixel.heypixelmod.obsoverlay.modules.Category;
 import com.heypixel.heypixelmod.obsoverlay.modules.Module;
 import com.heypixel.heypixelmod.obsoverlay.modules.ModuleInfo;
-import net.minecraft.world.effect.MobEffects;
 
 @ModuleInfo(
    name = "Sprint",
@@ -15,19 +13,13 @@ import net.minecraft.world.effect.MobEffects;
    category = Category.MOVEMENT
 )
 public class Sprint extends Module {
-
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
-    @EventTarget(0)
+   @EventTarget(0)
    public void onMotion(EventMotion e) {
       if (e.getType() == EventType.PRE) {
          mc.options.keySprint.setDown(true);
          mc.options.toggleSprint().set(false);
       }
    }
-
 
    @Override
    public void onDisable() {

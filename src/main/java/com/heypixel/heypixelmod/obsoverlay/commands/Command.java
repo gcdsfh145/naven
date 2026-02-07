@@ -4,7 +4,6 @@ public abstract class Command {
    private String name;
    private String description;
    private String[] aliases;
-   private String[] names;
 
    protected void initCommand() {
       if (this.getClass().isAnnotationPresent(CommandInfo.class)) {
@@ -14,9 +13,7 @@ public abstract class Command {
          this.aliases = commandInfo.aliases();
       }
    }
-   public String[] getNames() {
-      return this.names;
-   }
+
    public abstract void onCommand(String[] var1);
 
    public abstract String[] onTab(String[] var1);

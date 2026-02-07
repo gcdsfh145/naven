@@ -21,12 +21,7 @@ import net.minecraft.world.entity.projectile.Fireball;
    category = Category.MISC
 )
 public class AntiFireball extends Module {
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
-
-    @EventTarget
+   @EventTarget
    public void onMotion(EventMotion e) {
       if (!Naven.getInstance().getModuleManager().getModule(LongJump.class).isEnabled()) {
          if (e.getType() == EventType.PRE) {

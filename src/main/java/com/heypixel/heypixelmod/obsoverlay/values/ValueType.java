@@ -4,6 +4,5 @@ public enum ValueType {
    BOOLEAN,
    FLOAT,
    MODE,
-   STRING,
-   INT;
+   STRING;
 }

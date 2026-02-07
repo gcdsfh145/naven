@@ -2,7 +2,6 @@ package com.heypixel.heypixelmod.obsoverlay.ui.notification;
 
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventRender2D;
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventShader;
-import com.heypixel.heypixelmod.obsoverlay.modules.impl.render.Island;
 import com.heypixel.heypixelmod.obsoverlay.utils.SmoothAnimationTimer;
 import com.mojang.blaze3d.platform.Window;
 import java.util.List;
@@ -11,23 +10,12 @@ import net.minecraft.client.Minecraft;
 
 public class NotificationManager {
    private final List<Notification> notifications = new CopyOnWriteArrayList<>();
-   public void addNotification(Notification notification) {
-      String msg = notification.getMessage();
-      if (msg != null) {
-         String lower = msg.toLowerCase();
-         if (lower.contains("server lagging") || lower.contains("server currently online")) {
-            return;
-         }
-      }
 
+   public void addNotification(Notification notification) {
       if (!this.notifications.contains(notification)) {
          this.notifications.add(notification);
-         try {
-            Island.postNotice(notification.getMessage());
-         } catch (Throwable ignored) { }
       }
    }
-
 
    public void onRenderShadow(EventShader e) {
       for (Notification notification : this.notifications) {
@@ -38,13 +26,6 @@ public class NotificationManager {
             e.getStack(), (float)window.getGuiScaledWidth() - widthTimer.value + 2.0F, (float)window.getGuiScaledHeight() - heightTimer.value
          );
       }
-   }
-
-   public static enum NotifyType {
-      SUCCESS,
-      ERROR,
-      WARNING,
-      INFO;
    }
 
    public void onRender(EventRender2D e) {

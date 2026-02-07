@@ -11,7 +11,6 @@ import com.heypixel.heypixelmod.obsoverlay.events.impl.EventShader;
 import com.heypixel.heypixelmod.obsoverlay.modules.Category;
 import com.heypixel.heypixelmod.obsoverlay.modules.Module;
 import com.heypixel.heypixelmod.obsoverlay.modules.ModuleInfo;
-import com.heypixel.heypixelmod.obsoverlay.modules.impl.misc.HackerDetector;
 import com.heypixel.heypixelmod.obsoverlay.modules.impl.misc.Teams;
 import com.heypixel.heypixelmod.obsoverlay.ui.notification.Notification;
 import com.heypixel.heypixelmod.obsoverlay.ui.notification.NotificationLevel;
@@ -37,10 +36,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import dev.yalan.live.LiveClient;
-import dev.yalan.live.LiveComponent;
-import dev.yalan.live.LiveUser;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -53,31 +48,31 @@ import net.minecraft.world.phys.HitResult.Type;
 import org.joml.Vector4f;
 
 @ModuleInfo(
-        name = "NameTags",
-        category = Category.RENDER,
-        description = "Renders name tags"
+   name = "NameTags",
+   category = Category.RENDER,
+   description = "Renders name tags"
 )
 public class NameTags extends Module {
    public BooleanValue mcf = ValueBuilder.create(this, "Middle Click Friend").setDefaultBooleanValue(true).build().getBooleanValue();
    public BooleanValue showCompassPosition = ValueBuilder.create(this, "Compass Position").setDefaultBooleanValue(true).build().getBooleanValue();
    public BooleanValue compassOnly = ValueBuilder.create(this, "Compass Only")
-           .setDefaultBooleanValue(true)
-           .setVisibility(() -> this.showCompassPosition.getCurrentValue())
-           .build()
-           .getBooleanValue();
+      .setDefaultBooleanValue(true)
+      .setVisibility(() -> this.showCompassPosition.getCurrentValue())
+      .build()
+      .getBooleanValue();
    public BooleanValue noPlayerOnly = ValueBuilder.create(this, "No Player Only")
-           .setDefaultBooleanValue(true)
-           .setVisibility(() -> this.showCompassPosition.getCurrentValue())
-           .build()
-           .getBooleanValue();
+      .setDefaultBooleanValue(true)
+      .setVisibility(() -> this.showCompassPosition.getCurrentValue())
+      .build()
+      .getBooleanValue();
    public BooleanValue shared = ValueBuilder.create(this, "Shared ESP").setDefaultBooleanValue(true).build().getBooleanValue();
    public FloatValue scale = ValueBuilder.create(this, "Scale")
-           .setDefaultFloatValue(0.3F)
-           .setFloatStep(0.01F)
-           .setMinFloatValue(0.1F)
-           .setMaxFloatValue(0.5F)
-           .build()
-           .getFloatValue();
+      .setDefaultFloatValue(0.3F)
+      .setFloatStep(0.01F)
+      .setMinFloatValue(0.1F)
+      .setMaxFloatValue(0.5F)
+      .build()
+      .getFloatValue();
    private static final int color1 = new Color(0, 0, 0, 40).getRGB();
    private static final int color2 = new Color(0, 0, 0, 80).getRGB();
    private final Map<Entity, Vector2f> entityPositions = new ConcurrentHashMap<>();
@@ -171,10 +166,10 @@ public class NameTags extends Module {
          this.compassPosition = null;
          if (this.spawnPosition != null) {
             this.compassPosition = ProjectionUtils.project(
-                    (double)this.spawnPosition.getX() + 0.5,
-                    (double)this.spawnPosition.getY() + 1.75,
-                    (double)this.spawnPosition.getZ() + 0.5,
-                    e.getRenderPartialTicks()
+               (double)this.spawnPosition.getX() + 0.5,
+               (double)this.spawnPosition.getY() + 1.75,
+               (double)this.spawnPosition.getZ() + 0.5,
+               e.getRenderPartialTicks()
             );
          }
       } catch (Exception var3) {
@@ -186,7 +181,7 @@ public class NameTags extends Module {
       if (e.getKey() == 2 && !e.isState() && this.mcf.getCurrentValue() && this.aimingPlayer != null) {
          if (FriendManager.isFriend(this.aimingPlayer)) {
             Notification notification = new Notification(
-                    NotificationLevel.ERROR, "Removed " + this.aimingPlayer.getName().getString() + " from friends!", 3000L
+               NotificationLevel.ERROR, "Removed " + this.aimingPlayer.getName().getString() + " from friends!", 3000L
             );
             Naven.getInstance().getNotificationManager().addNotification(notification);
             FriendManager.removeFriend(this.aimingPlayer);
@@ -204,29 +199,29 @@ public class NameTags extends Module {
       if (this.compassPosition != null) {
          Vector2f position = this.compassPosition;
          float scale = Math.max(
-                 80.0F
-                         - Mth.sqrt(
-                         (float)mc.player
-                                 .distanceToSqr(
-                                         (double)this.spawnPosition.getX() + 0.5, (double)this.spawnPosition.getY() + 1.75, (double)this.spawnPosition.getZ() + 0.5
-                                 )
-                 ),
-                 0.0F
-         )
-                 * this.scale.getCurrentValue()
-                 / 80.0F;
+               80.0F
+                  - Mth.sqrt(
+                     (float)mc.player
+                        .distanceToSqr(
+                           (double)this.spawnPosition.getX() + 0.5, (double)this.spawnPosition.getY() + 1.75, (double)this.spawnPosition.getZ() + 0.5
+                        )
+                  ),
+               0.0F
+            )
+            * this.scale.getCurrentValue()
+            / 80.0F;
          String text = "Compass";
          float width = Fonts.harmony.getWidth(text, (double)scale);
          double height = Fonts.harmony.getHeight(true, (double)scale);
          this.blurMatrices
-                 .add(new Vector4f(position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height)));
+            .add(new Vector4f(position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height)));
          StencilUtils.write(false);
          RenderUtils.fill(
-                 e.getStack(), position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height), -1
+            e.getStack(), position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height), -1
          );
          StencilUtils.erase(true);
          RenderUtils.fill(
-                 e.getStack(), position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height), color1
+            e.getStack(), position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height), color1
          );
          StencilUtils.dispose();
          Fonts.harmony.setAlpha(0.8F);
@@ -242,19 +237,8 @@ public class NameTags extends Module {
                living.setHealth(20.0F);
             }
 
-            LiveUser liveUser = LiveClient.INSTANCE.getLiveUserMap().get(living.getUUID());
             Vector2f position = entry.getValue();
             String text = "";
-
-            if (HackerDetector.hackers.contains(living.getName().getString())) {
-               text = text + "§c[Hacker]§f | ";
-            }
-
-            if (liveUser != null) {
-               text = text + LiveComponent.getLiveUserDisplayName(liveUser) + " ";
-            }
-
-            // 使用Teams.isSameTeam方法判断是否为队友
             if (Teams.isSameTeam(living)) {
                text = text + "§aTeam§f | ";
             }
@@ -274,22 +258,22 @@ public class NameTags extends Module {
             float delta = 1.0F - living.getHealth() / living.getMaxHealth();
             double height = Fonts.harmony.getHeight(true, (double)scale);
             this.blurMatrices
-                    .add(new Vector4f(position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height)));
+               .add(new Vector4f(position.x - width / 2.0F - 2.0F, position.y - 2.0F, position.x + width / 2.0F + 2.0F, (float)((double)position.y + height)));
             RenderUtils.fill(
-                    e.getStack(),
-                    position.x - width / 2.0F - 2.0F,
-                    position.y - 2.0F,
-                    position.x + width / 2.0F + 2.0F,
-                    (float)((double)position.y + height),
-                    color1
+               e.getStack(),
+               position.x - width / 2.0F - 2.0F,
+               position.y - 2.0F,
+               position.x + width / 2.0F + 2.0F,
+               (float)((double)position.y + height),
+               color1
             );
             RenderUtils.fill(
-                    e.getStack(),
-                    position.x - width / 2.0F - 2.0F,
-                    position.y - 2.0F,
-                    position.x + width / 2.0F + 2.0F - (width + 4.0F) * delta,
-                    (float)((double)position.y + height),
-                    color2
+               e.getStack(),
+               position.x - width / 2.0F - 2.0F,
+               position.y - 2.0F,
+               position.x + width / 2.0F + 2.0F - (width + 4.0F) * delta,
+               (float)((double)position.y + height),
+               color2
             );
             Fonts.harmony.setAlpha(0.8F);
             Fonts.harmony.render(e.getStack(), text, (double)(position.x - width / 2.0F), (double)(position.y - 1.0F), Color.WHITE, true, (double)scale);
@@ -308,24 +292,24 @@ public class NameTags extends Module {
             double delta = 1.0 - data.getHealth() / data.getMaxHealth();
             double height = Fonts.harmony.getHeight(true, (double)scale);
             this.blurMatrices
-                    .add(
-                            new Vector4f(positionx.x - width / 2.0F - 2.0F, positionx.y - 2.0F, positionx.x + width / 2.0F + 2.0F, (float)((double)positionx.y + height))
-                    );
+               .add(
+                  new Vector4f(positionx.x - width / 2.0F - 2.0F, positionx.y - 2.0F, positionx.x + width / 2.0F + 2.0F, (float)((double)positionx.y + height))
+               );
             RenderUtils.fill(
-                    e.getStack(),
-                    positionx.x - width / 2.0F - 2.0F,
-                    positionx.y - 2.0F,
-                    positionx.x + width / 2.0F + 2.0F,
-                    (float)((double)positionx.y + height),
-                    color1
+               e.getStack(),
+               positionx.x - width / 2.0F - 2.0F,
+               positionx.y - 2.0F,
+               positionx.x + width / 2.0F + 2.0F,
+               (float)((double)positionx.y + height),
+               color1
             );
             RenderUtils.fill(
-                    e.getStack(),
-                    positionx.x - width / 2.0F - 2.0F,
-                    positionx.y - 2.0F,
-                    (float)((double)(positionx.x + width / 2.0F + 2.0F) - (double)(width + 4.0F) * delta),
-                    (float)((double)positionx.y + height),
-                    color2
+               e.getStack(),
+               positionx.x - width / 2.0F - 2.0F,
+               positionx.y - 2.0F,
+               (float)((double)(positionx.x + width / 2.0F + 2.0F) - (double)(width + 4.0F) * delta),
+               (float)((double)positionx.y + height),
+               color2
             );
             Fonts.harmony.setAlpha(0.8F);
             Fonts.harmony.render(e.getStack(), textx, (double)(positionx.x - width / 2.0F), (double)(positionx.y - 1.0F), Color.WHITE, true, (double)scale);
@@ -361,12 +345,12 @@ public class NameTags extends Module {
             vector.setY(vector.getY() - 2.0F);
             String displayName = value.getDisplayName();
             displayName = displayName
-                    + "§f | §c"
-                    + Math.round(value.getHealth())
-                    + (value.getAbsorption() > 0.0 ? "+" + Math.round(value.getAbsorption()) : "")
-                    + "HP";
+               + "§f | §c"
+               + Math.round(value.getHealth())
+               + (value.getAbsorption() > 0.0 ? "+" + Math.round(value.getAbsorption()) : "")
+               + "HP";
             this.sharedPositions
-                    .add(new NameTags.NameTagData(displayName, value.getHealth(), value.getMaxHealth(), value.getAbsorption(), new Vec3(x, y, z), vector));
+               .add(new NameTags.NameTagData(displayName, value.getHealth(), value.getMaxHealth(), value.getAbsorption(), new Vec3(x, y, z), vector));
          }
       }
    }
@@ -461,18 +445,18 @@ public class NameTags extends Module {
       @Override
       public String toString() {
          return "NameTags.NameTagData(displayName="
-                 + this.getDisplayName()
-                 + ", health="
-                 + this.getHealth()
-                 + ", maxHealth="
-                 + this.getMaxHealth()
-                 + ", absorption="
-                 + this.getAbsorption()
-                 + ", position="
-                 + this.getPosition()
-                 + ", render="
-                 + this.getRender()
-                 + ")";
+            + this.getDisplayName()
+            + ", health="
+            + this.getHealth()
+            + ", maxHealth="
+            + this.getMaxHealth()
+            + ", absorption="
+            + this.getAbsorption()
+            + ", position="
+            + this.getPosition()
+            + ", render="
+            + this.getRender()
+            + ")";
       }
 
       public NameTagData(String displayName, double health, double maxHealth, double absorption, Vec3 position, Vector2f render) {

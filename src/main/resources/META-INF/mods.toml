@@ -18,7 +18,7 @@ license="All-Rights-Reserved"
 # The modid of the mod
 modId="naven" #mandatory
 # The version number of the mod
-version="14.0" #mandatory
+version="1.0" #mandatory
 # A display name for the mod
 displayName="Naven-Modern" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://docs.minecraftforge.net/en/latest/misc/updatechecker/
@@ -30,9 +30,9 @@ displayName="Naven-Modern" #mandatory
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI
-authors="ShaoYu" #optional
+authors="jiuxian_baka" #optional
 # The description text for the mod (multi line!) (#mandatory)
-description='''公益 +1043712241'''
+description='''共享Naven'''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies."naven"]] #optional
    # the modid of the dependency

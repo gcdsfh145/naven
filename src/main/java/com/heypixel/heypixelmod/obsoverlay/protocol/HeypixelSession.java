@@ -1,6 +1,5 @@
 package com.heypixel.heypixelmod.obsoverlay.protocol;
 
-import com.heypixel.heypixelmod.obsoverlay.modules.impl.misc.Protocol;
 import com.heypixel.heypixelmod.obsoverlay.protocol.spoofer.FakeBaseboard;
 import com.heypixel.heypixelmod.obsoverlay.protocol.spoofer.FakeDiskStore;
 import com.heypixel.heypixelmod.obsoverlay.protocol.spoofer.FakeMac;
@@ -18,7 +17,7 @@ import org.msgpack.value.ValueFactory;
 import org.msgpack.value.Variable;
 import oshi.hardware.Baseboard;
 
-public class HeypixelSession extends Protocol {
+public class HeypixelSession {
    private final Variable cpu;
    private final Variable baseboardInfo;
    private final Variable diskStoreInfo;

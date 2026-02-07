@@ -3,7 +3,6 @@ package com.heypixel.heypixelmod.obsoverlay.utils.rotation;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -17,10 +16,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult.Type;
 
-import static com.heypixel.heypixelmod.obsoverlay.utils.rotation.RotationUtils.getVectorForRotations;
-
 public final class RayTraceUtil {
-   private static final Minecraft mc = Minecraft.getInstance();
    public static HitResult rayCast(float partialTicks, Rotation rotations) {
       HitResult objectMouseOver = null;
       Entity entity = Minecraft.getInstance().getCameraEntity();
@@ -30,92 +26,6 @@ public final class RayTraceUtil {
       }
 
       return objectMouseOver;
-   }
-   public static HitResult rayCasts(final Rotation rotation, final double range) {
-      return rayCasts(rotation, range, 0);
-   }
-
-   public static HitResult rayCasts(final Rotation rotation, final double range, final float expand) {
-      return rayCasts(rotation, range, expand, mc.player);
-   }
-
-   public static HitResult rayCasts(final Rotation rotation, final double range, final float expand, Entity entity) {
-      if (entity == null || mc.level == null) return null;
-
-      // Cache values for performance
-      final float partialTicks = mc.getFrameTime();
-      final Vec3 eyePosition = entity.getEyePosition(partialTicks);
-      final Vec3 lookVector = getVectorForRotations(rotation);
-      final Vec3 targetVec = eyePosition.add(lookVector.x * range, lookVector.y * range, lookVector.z * range);
-
-      // Pre-calculate expanded box dimensions once
-      final double expandedRange = range + expand;
-      final AABB searchBox = new AABB(
-              eyePosition.x - expandedRange, eyePosition.y - expandedRange, eyePosition.z - expandedRange,
-              eyePosition.x + expandedRange, eyePosition.y + expandedRange, eyePosition.z + expandedRange
-      );
-
-      // More efficient entity filtering
-      List<Entity> entities = mc.level.getEntitiesOfClass(
-              Entity.class,
-              searchBox,
-              e -> e != entity && EntitySelector.NO_SPECTATORS.test(e) && e.isPickable()
-      );
-
-      // Optimize entity hit detection
-      Entity pointedEntity = null;
-      Vec3 hitVec = null;
-      double closestDistance = range * range; // Square distance for faster comparison
-
-      for (Entity e : entities) {
-         AABB entityBox = e.getBoundingBox().inflate(expand);
-         Optional<Vec3> intercept = entityBox.clip(eyePosition, targetVec);
-
-         if (intercept.isPresent()) {
-            Vec3 interceptPoint = intercept.get();
-            double distSq = eyePosition.distanceToSqr(interceptPoint); // Faster than using distanceTo
-
-            if (distSq < closestDistance) {
-               closestDistance = distSq;
-               pointedEntity = e;
-               hitVec = interceptPoint;
-            }
-         }
-      }
-
-      // Return the most appropriate hit result
-      if (pointedEntity != null) {
-         return new EntityHitResult(pointedEntity, hitVec);
-      } else {
-         // Only perform block raycast if no entity was hit
-         return mc.level.clip(
-                 new ClipContext(
-                         eyePosition,
-                         targetVec,
-                         ClipContext.Block.OUTLINE,
-                         ClipContext.Fluid.NONE,
-                         entity
-                 )
-         );
-      }
-   }
-   public static boolean isWallBetween(Entity target) {
-      if (target == null) {
-         return true;
-      } else {
-         for (double d0 = 0.1; d0 < 0.9; d0 += 0.1) {
-            Vec3 vec3 = mc.player.getEyePosition();
-            Vec3 vec31 = target.position().add(0.0, target.getBbHeight() * d0, 0.0);
-            BlockHitResult blockhitresult = mc
-                    .level
-                    .clip(new ClipContext(vec3, vec31, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
-            if (blockhitresult.getType() == HitResult.Type.MISS ||
-                    blockhitresult.getBlockPos().equals(BlockPos.containing(vec31))) {
-               return false;
-            }
-         }
-         return true;
-      }
    }
 
    public static HitResult rayCast(double range, float partialTicks, boolean hitFluids, Rotation rotations) {
@@ -241,7 +151,7 @@ public final class RayTraceUtil {
       }
    }
 
-   public RayTraceUtil() {
+   private RayTraceUtil() {
       throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
    }
 }

@@ -61,11 +61,6 @@ public class AttackCrystal extends Module {
    }
 
    @EventTarget
-   public void onEnable() {
-        super.onEnable();
-}
-
-   @EventTarget
    public void onEarlyTick(EventRunTicks e) {
       if (e.getType() == EventType.PRE && mc.player != null && mc.level != null) {
          Optional<Entity> any = StreamSupport.<Entity>stream(mc.level.entitiesForRendering().spliterator(), true)
@@ -95,7 +90,7 @@ public class AttackCrystal extends Module {
          mc.player.swing(InteractionHand.MAIN_HAND);
          mc.player.setYRot(currentYaw);
          mc.player.setXRot(currentPitch);
-          this.entity = null;
+         this.entity = null;
       }
    }
 }

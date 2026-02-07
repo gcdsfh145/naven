@@ -16,7 +16,7 @@ public class ClickGUIModule extends Module {
    @Override
    protected void initModule() {
       super.initModule();
-      this.setKey(77);
+      this.setKey(344);
    }
 
    @Override

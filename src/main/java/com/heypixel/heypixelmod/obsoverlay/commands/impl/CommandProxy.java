@@ -15,7 +15,7 @@ public class CommandProxy extends Command {
    public void onCommand(String[] args) {
       if (args.length == 0) {
          if (ProxyFile.host == null) {
-            ChatUtils.addChatMessage("未找到代理.");
+            ChatUtils.addChatMessage("No proxy set.");
          } else {
             ChatUtils.addChatMessage("Current Proxy: " + ProxyFile.host + ":" + ProxyFile.port);
          }
@@ -23,14 +23,14 @@ public class CommandProxy extends Command {
          if (args[0].equals("cancel")) {
             ProxyFile.host = null;
             ProxyFile.port = 0;
-            ChatUtils.addChatMessage("代理已取消.");
+            ChatUtils.addChatMessage("Proxy cancelled.");
          } else {
             try {
                String[] proxy = args[0].split(":");
                ProxyFile.host = proxy[0];
                ProxyFile.port = Integer.parseInt(proxy[1]);
             } catch (Exception var3) {
-               ChatUtils.addChatMessage("代理无效.");
+               ChatUtils.addChatMessage("Invalid proxy.");
             }
          }
       }

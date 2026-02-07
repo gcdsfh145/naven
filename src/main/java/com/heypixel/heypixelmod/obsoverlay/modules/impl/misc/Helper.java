@@ -24,10 +24,6 @@ public class Helper extends Module {
    private int eme = 1;
    private boolean startgame = false;
 
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
    @EventTarget
    public void onMotion(EventMotion e) {
       if (e.getType() == EventType.PRE) {

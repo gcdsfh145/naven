@@ -1,7 +1,7 @@
 package com.heypixel.heypixelmod.obsoverlay.modules.impl.render;
 
 import com.google.gson.JsonSyntaxException;
-import org.mixin.O.accessors.PostChainAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.PostChainAccessor;
 import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
 import com.heypixel.heypixelmod.obsoverlay.events.api.types.EventType;
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventRunTicks;

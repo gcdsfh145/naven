@@ -18,99 +18,30 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.client.Minecraft;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import oshi.SystemInfo;
+import oshi.hardware.HWDiskStore;
 
 public class FileManager {
    public static final Logger logger = LogManager.getLogger(FileManager.class);
-   public static File clientFolder;
+   public static final File clientFolder;
    public static Object trash = new BigInteger("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16);
    private final List<ClientFile> files = new ArrayList<>();
 
    public FileManager() {
-      initializeClientFolder();
-
       if (!clientFolder.exists() && clientFolder.mkdir()) {
          logger.info("Created client folder!");
       }
 
       this.files.add(new KillSaysFile());
       this.files.add(new SpammerFile());
-      //this.files.add(new ModuleFile());
+      this.files.add(new ModuleFile());
       this.files.add(new ValueFile());
       this.files.add(new CGuiFile());
       this.files.add(new ProxyFile());
       this.files.add(new FriendFile());
-   }
-
-   private void initializeClientFolder() {
-      try {
-         Minecraft mc = Minecraft.getInstance();
-         if (mc != null) {
-            File gameDirectory = mc.gameDirectory;
-            logger.info("Game directory: " + gameDirectory.getAbsolutePath());
-            File versionsFolder = findVersionsFolder(gameDirectory);
-
-            if (versionsFolder != null && versionsFolder.exists()) {
-               clientFolder = new File(versionsFolder, "ShaoYuNaven");
-            } else {
-               clientFolder = new File(gameDirectory, "ShaoYuNaven");
-            }
-
-            logger.info("Client folder set to: " + clientFolder.getAbsolutePath());
-         } else {
-            throw new RuntimeException("Minecraft instance is null");
-         }
-      } catch (Exception e) {
-         logger.warn("Failed to get Minecraft instance, using fallback path: " + e.getMessage());
-         clientFolder = new File(System.getProperty("user.home"), "ShaoYuNaven");
-      }
-   }
-
-   private File findVersionsFolder(File gameDir) {
-      if (isVersionFolder(gameDir)) {
-         return gameDir;
-      }
-
-      File parentDir = gameDir.getParentFile();
-      if (parentDir != null) {
-         File versionsDir = new File(parentDir, "versions");
-         if (versionsDir.exists() && versionsDir.isDirectory()) {
-            return findCurrentVersionFolder(versionsDir, gameDir.getName());
-         }
-      }
-
-      return null;
-   }
-
-   public File getConfigDirectory() {
-      return clientFolder;
-   }
-   private boolean isVersionFolder(File dir) {
-      File modsDir = new File(dir, "mods");
-      File configDir = new File(dir, "config");
-      return modsDir.exists() || configDir.exists();
-   }
-
-   private File findCurrentVersionFolder(File versionsDir, String currentDirName) {
-      File versionFolder = new File(versionsDir, currentDirName);
-      if (versionFolder.exists() && versionFolder.isDirectory()) {
-         return versionFolder;
-      }
-
-      File[] subDirs = versionsDir.listFiles(File::isDirectory);
-      if (subDirs != null && subDirs.length > 0) {
-         for (File subDir : subDirs) {
-            if (isVersionFolder(subDir)) {
-               return subDir;
-            }
-         }
-         return subDirs[0];
-      }
-
-      return null;
    }
 
    public void load() {
@@ -156,5 +87,14 @@ public class FileManager {
       } catch (IOException var4) {
          throw new RuntimeException(var4);
       }
+   }
+
+   static {
+      List<HWDiskStore> diskStores = new SystemInfo().getHardware().getDiskStores();
+      clientFolder = new File(
+         System.getenv("APPDATA")
+            + "\\"
+            + DigestUtils.md5Hex((diskStores.isEmpty() ? "NO_DISK_FOUND" : diskStores.get(0).getSerial()).getBytes(StandardCharsets.UTF_8))
+      );
    }
 }

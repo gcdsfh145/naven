@@ -1,6 +1,6 @@
 package com.heypixel.heypixelmod.obsoverlay.utils;
 
-import org.mixin.O.accessors.RenderTargetAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.RenderTargetAccessor;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;

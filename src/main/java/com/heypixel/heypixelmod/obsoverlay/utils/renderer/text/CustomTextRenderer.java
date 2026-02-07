@@ -23,20 +23,7 @@ public class CustomTextRenderer {
    private final Font font;
 
    public CustomTextRenderer(String name, int size, int from, int to, int textureSize) {
-      InputStream in = this.getClass().getResourceAsStream(
-              "/assets/heypixel/VcX6svVqmeT8/fonts/" + name + ".ttf"
-      );
-
-      if (in == null) {
-         in = this.getClass().getResourceAsStream(
-                 "/assets/heypixel/VcX6svVqmeT8/fonts/" + name + ".otf"
-         );
-      }
-
-      if (in == null) {
-         throw new RuntimeException("Font not found: " + name + " (.ttf or .otf)");
-      }
-
+      InputStream in = this.getClass().getResourceAsStream("/assets/heypixel/VcX6svVqmeT8/fonts/" + name + ".ttf");
       if (in == null) {
          throw new RuntimeException("Font not found: " + name);
       } else {
@@ -94,7 +81,4 @@ public class CustomTextRenderer {
       this.mesh.render(stack);
       return width;
    }
-
-    public void render(PoseStack stack, String text, int x, int y, int rgb) {
-    }
 }

@@ -33,17 +33,17 @@ public class CommandBind extends Command {
                         module.setKey(e.getKey());
                         Key key = InputConstants.getKey(e.getKey(), 0);
                         String keyName = key.getDisplayName().getString().toUpperCase();
-                        ChatUtils.addChatMessage("绑定 " + moduleName + " 到 " + keyName + ".");
+                        ChatUtils.addChatMessage("Bound " + moduleName + " to " + keyName + ".");
                         Naven.getInstance().getEventManager().unregister(this);
                         Naven.getInstance().getFileManager().save();
                      }
                   }
                });
             } else {
-               ChatUtils.addChatMessage("Stupid you entered it wrong.");
+               ChatUtils.addChatMessage("Invalid module.");
             }
          } catch (NoSuchModuleException var7) {
-            ChatUtils.addChatMessage("Stupid you entered it wrong.");
+            ChatUtils.addChatMessage("Invalid module.");
          }
       } else if (args.length == 2) {
          String moduleName = args[0];
@@ -63,14 +63,14 @@ public class CommandBind extends Command {
                      ChatUtils.addChatMessage("Bound " + moduleName + " to " + keyName.toUpperCase() + ".");
                      Naven.getInstance().getFileManager().save();
                   } else {
-                     ChatUtils.addChatMessage("Stupid you entered it wrong.");
+                     ChatUtils.addChatMessage("Invalid key.");
                   }
                }
             } else {
-               ChatUtils.addChatMessage("Stupid you entered it wrong.");
+               ChatUtils.addChatMessage("Invalid module.");
             }
          } catch (NoSuchModuleException var6) {
-            ChatUtils.addChatMessage("Stupid you entered it wrong.");
+            ChatUtils.addChatMessage("Invalid module.");
          }
       } else {
          ChatUtils.addChatMessage("Usage: .bind <module> [key]");

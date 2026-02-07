@@ -1,6 +1,5 @@
 package com.heypixel.heypixelmod.obsoverlay.values;
 
-import com.heypixel.heypixelmod.obsoverlay.utils.IntValue;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.BooleanValue;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.FloatValue;
 import com.heypixel.heypixelmod.obsoverlay.values.impl.ModeValue;
@@ -19,11 +18,6 @@ public class ValueBuilder {
    private float minFloatValue;
    private float maxFloatValue;
    private float step;
-   private int defaultIntValue;
-   private int minIntValue;
-   private int maxIntValue;
-   private int intStep;
-
    private String[] modes;
    private int defaultModeIndex;
    private String defaultStringValue;
@@ -107,59 +101,6 @@ public class ValueBuilder {
       }
    }
 
-   // IntValue 相关方法
-   public ValueBuilder setDefaultIntValue(int defaultIntValue) {
-      if (this.valueType == null) {
-         this.setValueType(ValueType.INT);
-      }
-
-      if (this.valueType != ValueType.INT) {
-         throw new IllegalStateException("Value type is not int");
-      } else {
-         this.defaultIntValue = defaultIntValue;
-         return this;
-      }
-   }
-
-   public ValueBuilder setMinIntValue(int minIntValue) {
-      if (this.valueType == null) {
-         this.setValueType(ValueType.INT);
-      }
-
-      if (this.valueType != ValueType.INT) {
-         throw new IllegalStateException("Value type is not int");
-      } else {
-         this.minIntValue = minIntValue;
-         return this;
-      }
-   }
-
-   public ValueBuilder setMaxIntValue(int maxIntValue) {
-      if (this.valueType == null) {
-         this.setValueType(ValueType.INT);
-      }
-
-      if (this.valueType != ValueType.INT) {
-         throw new IllegalStateException("Value type is not int");
-      } else {
-         this.maxIntValue = maxIntValue;
-         return this;
-      }
-   }
-
-   public ValueBuilder setIntStep(int step) {
-      if (this.valueType == null) {
-         this.setValueType(ValueType.INT);
-      }
-
-      if (this.valueType != ValueType.INT) {
-         throw new IllegalStateException("Value type is not int");
-      } else {
-         this.intStep = step;
-         return this;
-      }
-   }
-
    public ValueBuilder setModes(String... modes) {
       if (this.valueType == null) {
          this.setValueType(ValueType.MODE);
@@ -218,11 +159,7 @@ public class ValueBuilder {
                return new BooleanValue(this.key, this.name, this.defaultBooleanValue, this.update, this.visibility);
             case FLOAT:
                return new FloatValue(
-                       this.key, this.name, this.defaultFloatValue, this.minFloatValue, this.maxFloatValue, this.step, this.update, this.visibility
-               );
-            case INT:
-               return new IntValue(
-                       this.key, this.name, this.defaultIntValue, this.minIntValue, this.maxIntValue, this.intStep, this.update, this.visibility
+                  this.key, this.name, this.defaultFloatValue, this.minFloatValue, this.maxFloatValue, this.step, this.update, this.visibility
                );
             case MODE:
                if (this.modes == null) {

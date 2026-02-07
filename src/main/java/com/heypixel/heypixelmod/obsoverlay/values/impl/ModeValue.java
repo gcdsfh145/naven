@@ -35,6 +35,7 @@ public class ModeValue extends Value {
    public String getCurrentMode() {
       return this.values[this.currentValue];
    }
+
    public void setCurrentValue(int currentValue) {
       this.currentValue = currentValue;
       if (this.update != null) {

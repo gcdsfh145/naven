@@ -1,6 +1,6 @@
 package com.heypixel.heypixelmod.obsoverlay.modules.impl.misc;
 
-import org.mixin.O.accessors.MinecraftAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.MinecraftAccessor;
 import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
 import com.heypixel.heypixelmod.obsoverlay.events.api.types.EventType;
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventMotion;
@@ -25,11 +25,6 @@ public class FastPlace extends Module {
       .build()
       .getFloatValue();
    private float counter = 0.0F;
-
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
 
    @EventTarget
    public void onMotion(EventMotion e) {

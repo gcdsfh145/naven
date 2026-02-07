@@ -54,7 +54,7 @@ public class PostProcess extends Module {
          GL11.glGetError();
          BlurUtils.onRenderAfterWorld(e, this.blurFPS.getCurrentValue(), (int)this.strength.getCurrentValue());
          if (GL11.glGetError() != 0) {
-            ChatUtils.addChatMessage("由于错误而禁用blur.");
+            ChatUtils.addChatMessage("Disabling blur due to error.");
             this.disableBlur = true;
          }
       }
@@ -63,7 +63,7 @@ public class PostProcess extends Module {
          GL11.glGetError();
          ShadowUtils.onRenderAfterWorld(e, this.bloomFPS.getCurrentValue());
          if (GL11.glGetError() != 0) {
-            ChatUtils.addChatMessage("由于错误而禁用bloom.");
+            ChatUtils.addChatMessage("Disabling bloom due to error.");
             this.disableBloom = true;
          }
       }

@@ -21,11 +21,6 @@ public class SafeWalk extends Module {
          .hasNext();
    }
 
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
-
    @EventTarget
    public void onMotion(EventMotion e) {
       if (e.getType() == EventType.PRE) {

@@ -1,7 +1,11 @@
 package com.heypixel.heypixelmod.obsoverlay.commands;
 
 import com.heypixel.heypixelmod.obsoverlay.Naven;
-import com.heypixel.heypixelmod.obsoverlay.commands.impl.*;
+import com.heypixel.heypixelmod.obsoverlay.commands.impl.CommandBind;
+import com.heypixel.heypixelmod.obsoverlay.commands.impl.CommandConfig;
+import com.heypixel.heypixelmod.obsoverlay.commands.impl.CommandLanguage;
+import com.heypixel.heypixelmod.obsoverlay.commands.impl.CommandProxy;
+import com.heypixel.heypixelmod.obsoverlay.commands.impl.CommandToggle;
 import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventClientChat;
 import com.heypixel.heypixelmod.obsoverlay.utils.ChatUtils;
@@ -10,7 +14,8 @@ import java.util.Map;
 
 public class CommandManager {
    public static final String PREFIX = ".";
-   public static final Map<String, Command> aliasMap = new HashMap<>();
+   public final Map<String, Command> aliasMap = new HashMap<>();
+
    public CommandManager() {
       try {
          this.initCommands();
@@ -22,15 +27,11 @@ public class CommandManager {
    }
 
    private void initCommands() {
-      this.registerCommand(new CommandBinds());
       this.registerCommand(new CommandBind());
       this.registerCommand(new CommandToggle());
       this.registerCommand(new CommandConfig());
       this.registerCommand(new CommandLanguage());
       this.registerCommand(new CommandProxy());
-      this.registerCommand(new CommandSetName());
-      this.registerCommand(new CommandChat());
-      this.registerCommand(new CommandHelp());
    }
 
    private void registerCommand(Command command) {
@@ -49,14 +50,14 @@ public class CommandManager {
          String chatMessage = e.getMessage().substring(".".length());
          String[] arguments = chatMessage.split(" ");
          if (arguments.length < 1) {
-            ChatUtils.addChatMessage("Stupid you entered it wrong.");
+            ChatUtils.addChatMessage("Invalid command.");
             return;
          }
 
          String alias = arguments[0].toLowerCase();
          Command command = this.aliasMap.get(alias);
          if (command == null) {
-            ChatUtils.addChatMessage("Stupid you entered it wrong.");
+            ChatUtils.addChatMessage("Invalid command.");
             return;
          }
 

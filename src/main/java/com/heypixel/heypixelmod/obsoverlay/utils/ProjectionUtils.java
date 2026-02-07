@@ -1,6 +1,6 @@
 package com.heypixel.heypixelmod.obsoverlay.utils;
 
-import org.mixin.O.accessors.GameRendererAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.GameRendererAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;

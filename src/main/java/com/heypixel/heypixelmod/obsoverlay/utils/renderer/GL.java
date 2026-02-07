@@ -1,7 +1,7 @@
 package com.heypixel.heypixelmod.obsoverlay.utils.renderer;
 
 import com.google.common.collect.ImmutableList;
-import org.mixin.O.accessors.BufferUploaderAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.BufferUploaderAccessor;
 import com.heypixel.heypixelmod.obsoverlay.utils.ICapabilityTracker;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;

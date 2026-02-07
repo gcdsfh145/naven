@@ -38,21 +38,12 @@ public class ValueFile extends ClientFile {
                String valueName = split[2];
                String value = split[3];
                HasValue module = hasValueManager.getHasValue(name);
-
-               if (module == null) {
-                  logger.error("Failed to find module {}!", name);
-                  continue;
-               }
-
                switch (valueType) {
                   case "B":
                      valueManager.getValue(module, valueName).getBooleanValue().setCurrentValue(Boolean.parseBoolean(value));
                      break;
                   case "F":
                      valueManager.getValue(module, valueName).getFloatValue().setCurrentValue(Float.parseFloat(value));
-                     break;
-                  case "I":
-                     valueManager.getValue(module, valueName).getIntValue().setCurrentValue(Integer.parseInt(value));
                      break;
                   case "S":
                      valueManager.getValue(module, valueName).getStringValue().setCurrentValue(value);
@@ -73,7 +64,6 @@ public class ValueFile extends ClientFile {
             }
          } catch (Exception var15) {
             logger.error("Failed to read value {}!", line);
-            var15.printStackTrace();
          }
       }
    }
@@ -85,20 +75,12 @@ public class ValueFile extends ClientFile {
       for (Value value : valueManager.getValues()) {
          try {
             ValueType valueType = value.getValueType();
-            if (value.getKey() == null) {
-               logger.warn("Skipping value with null key: {}", value.getName());
-               continue;
-            }
-
             switch (valueType) {
                case BOOLEAN:
                   writer.write(String.format("B:%s:%s:%s\n", value.getKey().getName(), value.getName(), value.getBooleanValue().getCurrentValue()));
                   break;
                case FLOAT:
                   writer.write(String.format("F:%s:%s:%s\n", value.getKey().getName(), value.getName(), value.getFloatValue().getCurrentValue()));
-                  break;
-               case INT:
-                  writer.write(String.format("I:%s:%s:%s\n", value.getKey().getName(), value.getName(), value.getIntValue().getCurrentValue()));
                   break;
                case STRING:
                   writer.write(String.format("S:%s:%s:%s\n", value.getKey().getName(), value.getName(), value.getStringValue().getCurrentValue()));
@@ -110,8 +92,7 @@ public class ValueFile extends ClientFile {
                   logger.error("Unknown value type of {}!", value.getKey().getName());
             }
          } catch (Exception var6) {
-            logger.error("Failed to save value {}!", value.getName());
-            var6.printStackTrace();
+            logger.error("Failed to save value {}!", value.getKey().getName());
          }
       }
    }

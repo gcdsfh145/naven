@@ -22,12 +22,7 @@ public class MathUtils {
          return pitch < -90.0F ? -90.0F : pitch;
       }
    }
-   public static int randomizeInt(float min, float max) {
-      return (int) randomizeDouble(min, max);
-   }
-   public static double randomizeDouble(double min, double max) {
-      return Math.random() * (max - min) + min;
-   }
+
    public static float map(float x, float prev_min, float prev_max, float new_min, float new_max) {
       return (x - prev_min) / (prev_max - prev_min) * (new_max - new_min) + new_min;
    }

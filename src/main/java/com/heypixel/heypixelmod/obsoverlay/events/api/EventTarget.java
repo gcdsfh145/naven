@@ -11,5 +11,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EventTarget {
    byte value() default 2;
-   boolean ignoreCondition() default false;
 }

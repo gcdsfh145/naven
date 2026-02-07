@@ -45,11 +45,6 @@ public class KillSay extends Module {
    private final TimeHelper timer = new TimeHelper();
    Random random = new Random();
 
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
-
    @EventTarget
    public void onRespawn(EventRespawn e) {
       attackedPlayers.clear();

@@ -20,11 +20,6 @@ public class FastWeb extends Module {
    private int playerInWebTick = 0;
    private int ticksInWeb = 0;
 
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
-
    @EventTarget
    public void onMotion(EventMotion e) {
       if (e.getType() == EventType.POST && this.playerInWebTick < mc.player.tickCount) {

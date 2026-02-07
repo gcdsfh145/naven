@@ -11,22 +11,13 @@ import com.heypixel.heypixelmod.obsoverlay.modules.Module;
 import com.heypixel.heypixelmod.obsoverlay.modules.ModuleInfo;
 import com.heypixel.heypixelmod.obsoverlay.utils.ChatUtils;
 import com.heypixel.heypixelmod.obsoverlay.utils.MoveUtils;
-import com.heypixel.heypixelmod.obsoverlay.utils.RenderUtils;
-import com.heypixel.heypixelmod.obsoverlay.utils.SmoothAnimationTimer;
-import com.heypixel.heypixelmod.obsoverlay.utils.renderer.Fonts;
-import com.heypixel.heypixelmod.obsoverlay.utils.renderer.text.CustomTextRenderer;
 import com.heypixel.heypixelmod.obsoverlay.utils.rotation.Rotation;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.lwjgl.glfw.GLFW;
@@ -52,9 +43,7 @@ public class LongJump extends Module {
    private int receivedKnockbacks = 0;
    private int initialFireballCount = 0;
    private int releasedKnockbacks = 0;
-   private static final int mainColor = new Color(150, 45, 45, 255).getRGB();
-   private final SmoothAnimationTimer progress = new SmoothAnimationTimer(0.0f, 0.0f, 0.2f);
-   private final List<Integer> knockbackPositions = new ArrayList<Integer>();
+   private final List<Integer> knockbackPositions = new ArrayList<>();
    private final LinkedBlockingQueue<Packet<?>> packets = new LinkedBlockingQueue<>();
 
    private void releaseAll() {
@@ -92,11 +81,6 @@ public class LongJump extends Module {
             this.knockbackPositions.set(i, this.knockbackPositions.get(i) - (targetPosition + 1));
          }
       }
-   }
-
-   private void updateProgressBar() {
-      float remainingKnockbacks;
-      this.progress.target = this.receivedKnockbacks == 0 ? 0.0f : ((remainingKnockbacks = (float) (this.receivedKnockbacks - this.releasedKnockbacks)) > 0.0f ? Mth.clamp(remainingKnockbacks / (float) this.receivedKnockbacks * 100.0f, 0.0f, 100.0f) : 0.0f);
    }
 
    private int getFireballSlot() {
@@ -152,8 +136,6 @@ public class LongJump extends Module {
       this.initialFireballCount = 0;
       this.releasedKnockbacks = 0;
       this.knockbackPositions.clear();
-      this.progress.target = 0.0f;
-      this.progress.value = 0.0f;
       ChatUtils.addChatMessage("§aLongJump enabled! Press Mouse4 to jump & use fireball, Mouse5 to release each knockback");
    }
 
@@ -177,8 +159,6 @@ public class LongJump extends Module {
       this.initialFireballCount = 0;
       this.releasedKnockbacks = 0;
       this.knockbackPositions.clear();
-      this.progress.target = 0.0f;
-      this.progress.value = 0.0f;
       super.onDisable();
    }
 
@@ -239,34 +219,30 @@ public class LongJump extends Module {
 
    @EventTarget
    public void onRender2D(EventRender2D event) {
-      if (!this.isEnabled()) {
-         return;
-      }
-      CustomTextRenderer font = Fonts.opensans;
-      int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-      int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
-      int progressX = screenWidth / 2 - 60;
-      int progressY = screenHeight / 2 + 35;
-      int progressWidth = 120;
-      int progressHeight = 6;
-      this.progress.update(true);
-      if (this.receivedKnockbacks > 0) {
-         this.updateProgressBar();
-         RenderUtils.drawRoundedRect(event.getStack(), progressX, progressY, progressWidth, progressHeight, 2.0f, Integer.MIN_VALUE);
-         float progressFill = this.progress.value / 100.0f * (float) progressWidth;
-         if (progressFill > 0.0f) {
-            RenderUtils.drawRoundedRect(event.getStack(), progressX, progressY, progressFill, progressHeight, 2.0f, mainColor);
+      if (this.isEnabled()) {
+         int screenWidth = mc.getWindow().getGuiScaledWidth();
+         int screenHeight = mc.getWindow().getGuiScaledHeight();
+         String statusText;
+         if (this.delayed) {
+            int packetCount = this.packets.size();
+            long currentTime = System.currentTimeMillis();
+            long delayDuration = currentTime - this.delayStartTime;
+            statusText = String.format(
+               "§eIntercepting: %d packets | Time: %.1fs | Press Mouse5 (%d/%d)",
+               packetCount,
+               (float)delayDuration / 1000.0F,
+               this.releasedKnockbacks,
+               this.receivedKnockbacks
+            );
+         } else if (this.isUsingItem) {
+            statusText = "§aUsing fireball #" + this.usedFireballCount;
+         } else {
+            statusText = "§bWaiting for input | Mouse4: Jump & use fireball | Mouse5: Release";
          }
-         String progressText = String.format("§fKnockbacks: %d/%d", this.receivedKnockbacks - this.releasedKnockbacks, this.receivedKnockbacks);
-         float progressTextX = (float) screenWidth / 2.0f - (float) mc.font.width(progressText) / 2.0f;
-         float progressTextY = progressY + progressHeight + 6;
-         font.render(event.getStack(), progressText, (int) progressTextX + 5, (int) progressTextY, Color.WHITE, true, 0.4f);
-      } else {
-         String progressText = "Waiting for knockback...";
-         float progressTextX = (float) screenWidth / 2.0f - (float) mc.font.width(progressText) / 2.0f;
-         float progressTextY = progressY + progressHeight + 6;
-         RenderUtils.drawRoundedRect(event.getStack(), progressX, progressY, progressWidth, progressHeight, 2.0f, Integer.MIN_VALUE);
-         font.render(event.getStack(), progressText, (int) progressTextX + 5, (int) progressTextY, Color.WHITE, true, 0.4f);
+
+         float textX = (float)screenWidth / 2.0F - (float)mc.font.width(statusText) / 2.0F;
+         float textY = (float)screenHeight / 2.0F + 20.0F;
+         event.getGuiGraphics().drawString(mc.font, statusText, (int)textX, (int)textY, -1);
       }
    }
 

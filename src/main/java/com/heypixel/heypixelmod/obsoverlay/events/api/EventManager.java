@@ -3,23 +3,18 @@ package com.heypixel.heypixelmod.obsoverlay.events.api;
 import com.heypixel.heypixelmod.obsoverlay.events.api.events.Event;
 import com.heypixel.heypixelmod.obsoverlay.events.api.events.EventStoppable;
 import com.heypixel.heypixelmod.obsoverlay.events.api.types.Priority;
-
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.heypixel.heypixelmod.obsoverlay.utils.EventHook;
-import com.heypixel.heypixelmod.obsoverlay.utils.EventPackets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class EventManager {
-   public static final EventManager instance = new EventManager();
    private static final Logger log = LogManager.getLogger(EventManager.class);
    private final Map<Class<? extends Event>, List<EventManager.MethodData>> REGISTRY_MAP = new HashMap<>();
 
@@ -161,7 +156,6 @@ public final class EventManager {
       }
    }
 
-
    private static final class MethodData {
       private final Object source;
       private final Method target;
@@ -184,50 +178,5 @@ public final class EventManager {
       public byte getPriority() {
          return this.priority;
       }
-   }
-
-   private static final Map<Class<? extends Event>, ConcurrentLinkedQueue<EventHook>> registry = new ConcurrentHashMap<>();
-   private static final Map<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
-   public static void call2(EventPackets event) {
-      ConcurrentLinkedQueue<EventHook> targets = registry.get(event.getClass());
-      if (targets == null || targets.isEmpty()) {
-         return;
-      }
-
-      targets.forEach(eventHook -> {
-         try {
-            if (eventHook.getEventInterface().handleEvents() || eventHook.isIgnoreCondition()) {
-               MethodHandle handle = methodHandleCache.get(eventHook.getMethod());
-               if (handle != null) {
-                  handle.invoke(eventHook.getEventInterface(), event);
-               } else {
-                  eventHook.getMethod().invoke(eventHook.getEventInterface(), event);
-               }
-            }
-         } catch (Throwable t) {
-            t.printStackTrace();
-         }
-      });
-   }
-   public void call3(EventPackets event) {
-      ConcurrentLinkedQueue<EventHook> targets = registry.get(event.getClass());
-      if (targets == null || targets.isEmpty()) {
-         return;
-      }
-
-      targets.forEach(eventHook -> {
-         try {
-            if (eventHook.getEventInterface().handleEvents() || eventHook.isIgnoreCondition()) {
-               MethodHandle handle = methodHandleCache.get(eventHook.getMethod());
-               if (handle != null) {
-                  handle.invoke(eventHook.getEventInterface(), event);
-               } else {
-                  eventHook.getMethod().invoke(eventHook.getEventInterface(), event);
-               }
-            }
-         } catch (Throwable t) {
-            t.printStackTrace();
-         }
-      });
    }
 }

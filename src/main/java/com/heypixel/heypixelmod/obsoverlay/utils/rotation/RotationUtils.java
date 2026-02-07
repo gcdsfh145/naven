@@ -1,24 +1,16 @@
 package com.heypixel.heypixelmod.obsoverlay.utils.rotation;
 
-import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
-import com.heypixel.heypixelmod.obsoverlay.events.impl.EventPacket;
 import com.heypixel.heypixelmod.obsoverlay.utils.MathHelper;
 import com.heypixel.heypixelmod.obsoverlay.utils.MathUtils;
-import com.heypixel.heypixelmod.obsoverlay.utils.MotionEvent;
 import com.heypixel.heypixelmod.obsoverlay.utils.Vector2f;
-import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -26,363 +18,10 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult.Type;
-import net.minecraftforge.event.TickEvent;
 import org.antlr.v4.runtime.misc.OrderedHashSet;
-import org.apache.commons.lang3.RandomUtils;
-import org.joml.Vector3d;
-import sun.misc.Unsafe;
-
-import static java.lang.Math.sqrt;
 
 public class RotationUtils {
    private static final Minecraft mc = Minecraft.getInstance();
-   public static Rotation targetRotation;
-   public static Rotation serverRotation = new Rotation(0.0F, 0.0F);
-   private static int keepLength;
-   private static final Unsafe unsafe;
-   public static Rotation getRotationFromEyeHasPrev(double x, double y, double z) {
-      double xDiff = x - (mc.player.xOld + (mc.player.getX() - mc.player.xOld));
-      double yDiff = y - (mc.player.yOld + (mc.player.getY() - mc.player.yOld) + (mc.player.getBoundingBox().maxY - mc.player.getBoundingBox().minY));
-      double zDiff = z - (mc.player.zOld + (mc.player.getZ() - mc.player.zOld));
-      double dist = (double)Math.sqrt(xDiff * xDiff + zDiff * zDiff);
-      return new Rotation((float)(Math.atan2(zDiff, xDiff) * 180.0D / Math.PI) - 90.0F, (float)(-(Math.atan2(yDiff, dist) * 180.0D / Math.PI)));
-   }
-
-   public static Rotation getRotationFromEyeHasPrev(LivingEntity target) {
-      double x = target.xOld + (target.getX() - target.xOld);
-      double y = target.yOld + (target.getY() - target.yOld);
-      double z = target.zOld + (target.getZ() - target.zOld);
-      return getRotationFromEyeHasPrev(x, y, z);
-   }
-
-   public static Rotation getRotationFromEyeHasPrev(Vec3 vec) {
-      return getRotationFromEyeHasPrev(vec.x, vec.y, vec.z);
-   }
-
-   public static float[] prevRotations = new float[2];
-
-   public static double getRotationDifferences(Rotation a, Rotation b) {
-      return Math.hypot((double)getAngleDifference(a.getYaw(), b.getYaw()), (double)(a.getPitch() - b.getPitch()));
-   }
-
-   public static float getRotationDifferences(float current, float target) {
-      return Mth.wrapDegrees(target - current);
-   }
-
-
-   public static double getRotationDifferences(Rotation rotation) {
-      return prevRotations == null ? 0.0D : getRotationDifferences(rotation, new Rotation(prevRotations[0], prevRotations[1]));
-   }
-   public static Rotation getNewRotations(Vec3 vec) {
-      Vec3 vec3 = new Vec3(mc.player.getX(), mc.player.getBoundingBox().minY + (double) mc.player.getEyeHeight(), mc.player.getZ());
-      double d0 = vec.x - vec3.x;
-      double d1 = vec.y + (double) mc.player.getBbHeight() / 2.0 - vec3.y;
-      double d2 = vec.z - vec3.z;
-      double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-      float f = (float) (Math.atan2(d2, d0) * 180.0 / Math.PI) - 90.0F;
-      float f1 = (float) (-Math.atan2(d1, d3) * 180.0 / Math.PI);
-      return new Rotation(f, f1);
-   }
-   public static Vector2f getRotationFromEyeToPoints(Vector3d point3d) {
-      return calculates(new Vector3d(mc.player.getX(), mc.player.getBoundingBox().minY + mc.player.getEyeHeight(), mc.player.getZ()), point3d);
-   }
-
-   public static Vector2f calculates(Vector3d from, Vector3d to) {
-      final double x = to.x - from.x;
-      final double y = to.y - from.y;
-      final double z = to.z - from.z;
-
-      final double sqrt = Math.sqrt(x * x + z * z);
-
-      final float yaw = (float) Math.toDegrees(Math.atan2(z, x)) - 90F;
-      final float pitch = (float) (-Math.toDegrees(Math.atan2(y, sqrt)));
-
-      return new Vector2f(yaw, Math.min(Math.max(pitch, -90), 90));
-   }
-   public static Vec3 getCenters(AABB bb) {
-      return new Vec3(
-              bb.minX + (bb.maxX - bb.minX) * 0.5, bb.minY + (bb.maxY - bb.minY) * 0.5, bb.minZ + (bb.maxZ - bb.minZ) * 0.5
-      );
-   }
-   public static Rotation getNCPRotationss(Vec3 vec, boolean predict) {
-      Vec3 vec3 = new Vec3(
-              mc.player.getX(), mc.player.getBoundingBox().minY + (double) mc.player.getEyeHeight(mc.player.getPose()), mc.player.getZ()
-      );
-      if (predict) {
-         vec3.add(mc.player.getDeltaMovement().x, mc.player.getDeltaMovement().y, mc.player.getDeltaMovement().z);
-      }
-
-      double d0 = vec.x - vec3.x;
-      double d1 = vec.y + (double) mc.player.getBbHeight() / 2.0 - vec3.y;
-      double d2 = vec.z - vec3.z;
-      double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-      return new Rotation((float) (Math.atan2(d2, d0) * 180.0 / Math.PI) - 90.0F, (float) (-Math.atan2(d1, d3) * 180.0 / Math.PI));
-   }
-   public static Rotation toRotations(Vec3 vec, boolean predict) {
-      Vec3 vec3 = new Vec3(mc.player.getX(), mc.player.getBoundingBox().minY + (double) mc.player.getEyeHeight(), mc.player.getZ());
-      if (predict) {
-         vec3.add(mc.player.getDeltaMovement());
-      }
-
-      double d0 = vec.x - vec3.x;
-      double d1 = vec.y + (double) mc.player.getBbHeight() / 2.0 - vec3.y;
-      double d2 = vec.z - vec3.z;
-      return new Rotation(
-              Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(d2, d0)) - 90.0F), Mth.wrapDegrees((float) (-Math.toDegrees(Math.atan2(d1, Math.sqrt(d0 * d0 + d2 * d2)))))
-      );
-   }
-   public static float getDistanceToEntity(Entity target) {
-      if (mc.player == null) return 0.0F;
-
-      Vec3 eyes = mc.player.getEyePosition(1F);
-      Vec3 pos = getNearestPointBB(eyes, target.getBoundingBox());
-      double xDist = Math.abs(pos.x - eyes.x);
-      double yDist = Math.abs(pos.y - eyes.y);
-      double zDist = Math.abs(pos.z - eyes.z);
-      return (float) Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2) + Math.pow(zDist, 2));
-   }
-   public static Vec3 getVectorForRotations(final Rotation rotation) {
-      float yawCos = (float) Math.cos(-rotation.getYaw() * 0.017453292F - 3.1415927F);
-      float yawSin = (float) Math.sin(-rotation.getYaw() * 0.017453292F - 3.1415927F);
-      float pitchCos = (float) -Math.cos(-rotation.getPitch() * 0.017453292F);
-      float pitchSin = (float) Math.sin(-rotation.getPitch() * 0.017453292F);
-      return new Vec3(yawSin * pitchCos, pitchSin, yawCos * pitchCos);
-   }
-   public static double getYaw(Entity entity) {
-      if (mc.player == null) return 0.0D;
-
-      return mc.player.getYRot() + Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(entity.getZ() - mc.player.getZ(), entity.getX() - mc.player.getX())) - 90f - mc.player.getYRot());
-   }
-   public static float[] getAnglesss(Entity entity) {
-      if (entity == null)
-         return null;
-      final LocalPlayer thePlayer = mc.player;
-
-      final double diffX = entity.getX() - thePlayer.getX(),
-              diffY = entity.getY() + entity.getEyeHeight() * 0.9 - (thePlayer.getY() + thePlayer.getEyeHeight()),
-              diffZ = entity.getZ() - thePlayer.getZ(),
-              dist = Math.sqrt(diffX * diffX + diffZ * diffZ); // @on
-
-      final float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0D / Math.PI) - 90.0F,
-              pitch = (float) -(Math.atan2(diffY, dist) * 180.0D / Math.PI);
-      return new float[]{
-              thePlayer.getYRot() + Mth.wrapDegrees(yaw - thePlayer.getYRot()),
-              thePlayer.getXRot() + Mth.wrapDegrees(pitch - thePlayer.getXRot())
-      };
-   }
-   public static Vector2f getNewRotation(Entity target) {
-      double yDist = target.getY() - mc.player.getY();
-      Vec3 pos = yDist >= 1.7 ? new Vec3(target.getX(), target.getY(), target.getZ()) :
-              (yDist <= -1.7 ? new Vec3(target.getX(), target.getY() + (double)target.getEyeHeight(), target.getZ()) :
-                      new Vec3(target.getX(), target.getY() + (double)(target.getEyeHeight() / 2.0f), target.getZ()));
-
-      Vec3 vec = new Vec3(mc.player.getX(), mc.player.getBoundingBox().minY + (double)mc.player.getEyeHeight(), mc.player.getZ());
-      double xDist = pos.x - vec.x;
-      double yDist2 = pos.y - vec.y;
-      double zDist = pos.z - vec.z;
-      float yaw = (float)Math.toDegrees(Math.atan2(zDist, xDist)) - 90.0f;
-      float pitch = (float)(-Math.toDegrees(Math.atan2(yDist2, Math.sqrt(xDist * xDist + zDist * zDist))));
-
-      return new Vector2f(yaw, Math.min(Math.max(pitch, -90.0f), 90.0f));
-   }
-   public static float[] getHVHRotations(Entity entity, double maxRange) {
-      if (entity == null) {
-         return null;
-      } else {
-         double diffX = entity.getX() - mc.player.getX();
-         double diffZ = entity.getZ() - mc.player.getZ();
-         Vec3 BestPos = getNearestPointBB(mc.player.getEyePosition(), entity.getBoundingBox());
-         Vec3 myEyePos = new Vec3(mc.player.getX(), mc.player.getY() + mc.player.getEyeHeight(), mc.player.getZ());
-
-         double diffY;
-
-         diffY = BestPos.y - myEyePos.y;
-         double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
-         float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0D / Math.PI) - 90.0F;
-         float pitch = (float) (-(Math.atan2(diffY, dist) * 180.0D / Math.PI));
-         return new float[]{yaw, pitch};
-      }
-   }
-   public static float[] getSimpleRotations(Entity aimingTarget) {
-      if (mc.player == null) return new float[]{};
-
-      Vector3d targetPos;
-      final double yDist = aimingTarget.getY() - mc.player.getY();
-      if (yDist >= 1.547) {
-         targetPos = new Vector3d(aimingTarget.getX(), aimingTarget.getY(), aimingTarget.getZ());
-      } else if (yDist <= -1.547) {
-         targetPos = new Vector3d(aimingTarget.getX(), aimingTarget.getY() + aimingTarget.getEyeHeight(), aimingTarget.getZ());
-      } else {
-         targetPos = new Vector3d(aimingTarget.getX(), aimingTarget.getY() + aimingTarget.getEyeHeight() / 2, aimingTarget.getZ());
-      }
-      return getRotationFromEyeToPoint(targetPos);
-   }
-   public static float[] getRotationFromEyeToPoint(Vector3d point3d) {
-      if (mc.player == null) return new float[]{};
-
-      return getRotation(new Vector3d(mc.player.getX(), mc.player.getBoundingBox().minY + mc.player.getEyeHeight(), mc.player.getZ()), point3d);
-   }
-   public static float[] getRotation(Vector3d from, Vector3d to) {
-      final double x = to.x - from.x;
-      final double y = to.y - from.y;
-      final double z = to.z - from.z;
-
-      final double sqrt = Math.sqrt(x * x + z * z);
-
-      final float yaw = (float) Math.toDegrees(Math.atan2(z, x)) - 90F;
-      final float pitch = (float) (-Math.toDegrees(Math.atan2(y, sqrt)));
-
-      return new float[]{yaw, Math.min(Math.max(pitch, -90), 90)};
-   }
-
-   public static float[] getHVHRotation(Entity entity) {
-      if (entity == null || mc.player == null) return null;
-
-
-      final Player player = mc.player;
-      final double playerX = player.getX();
-      final double playerY = player.getY() + player.getEyeHeight();
-      final double playerZ = player.getZ();
-
-
-      final Vec3 eyePosition = new Vec3(playerX, playerY, playerZ);
-      final Vec3 bestPos = getClosestPoint(eyePosition, entity.getBoundingBox());
-      if (bestPos == null) return null;
-
-
-      final double diffX = bestPos.x - playerX;
-      final double diffZ = bestPos.z - playerZ;
-      final double diffY = bestPos.y - eyePosition.y;
-
-
-      final double horizontalDistance = Math.hypot(diffX, diffZ);
-
-      final float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90.0F;
-      final float pitch = (float) -Math.toDegrees(Math.atan2(diffY, horizontalDistance));
-
-      return new float[]{
-              Mth.wrapDegrees(yaw),
-              Mth.wrapDegrees(pitch)
-      };
-   }
-   public static Rotation getRotationForEntity(Entity entity) {
-      if (mc.player == null) return null;
-
-      Vec3 playerEyePos = mc.player.getEyePosition(1.0F);
-      Vec3 targetPos = new Vec3(entity.getX(), entity.getY() + entity.getBbHeight() * 0.5, entity.getZ());
-      Vec3 direction = targetPos.subtract(playerEyePos).normalize();
-      float yaw = (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90.0F;
-      float pitch = (float) -Math.toDegrees(Math.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
-      return new Rotation(yaw, pitch);
-   }
-
-   public static Vec3 getNearestPointBB(Vec3 eye, AABB box) {
-      double[] origin = {eye.x, eye.y, eye.z};
-      double[] destMinis = {box.minX, box.minY, box.minZ};
-      double[] destMaxis = {box.maxX, box.maxY, box.maxZ};
-
-      for (int i = 0; i < 3; i++) {
-         if (origin[i] > destMaxis[i]) {
-            origin[i] = destMaxis[i];
-         } else if (origin[i] < destMinis[i]) {
-            origin[i] = destMinis[i];
-         }
-      }
-
-      return new Vec3(origin[0], origin[1], origin[2]);
-   }
-
-   public static Rotation calculate(final Vector3d position, final Direction direction) {
-      double x = position.x + 0.5D;
-      double y = position.y + 0.5D;
-      double z = position.z + 0.5D;
-
-      x += direction.getStepX() * 0.5D;
-      y += direction.getStepY() * 0.5D;
-      z += direction.getStepZ() * 0.5D;
-
-      return calculate(new Vector3d(x, y, z));
-   }
-
-
-   public static Rotation calculate(Vector3d target) {
-      if (mc.player == null) return null;
-
-      Vec3 eyePosition = mc.player.getEyePosition(1.0F);
-      double deltaX = target.x - eyePosition.x;
-      double deltaY = target.y - eyePosition.y;
-      double deltaZ = target.z - eyePosition.z;
-
-      double distanceXZ = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
-      float yaw = (float) (Math.toDegrees(Math.atan2(deltaZ, deltaX)) - 90.0F);
-      float pitch = (float) -Math.toDegrees(Math.atan2(deltaY, distanceXZ));
-
-      return new Rotation(yaw, pitch);
-   }
-
-   public static Rotation getAngless(Entity entity) {
-      if (entity == null) return null;
-      final LocalPlayer thePlayer = mc.player;
-
-      if (thePlayer == null) return null;
-      final double diffX = entity.getX() - thePlayer.getX(),
-              diffY = entity.getY() + entity.getEyeHeight() * 0.9 - (thePlayer.getY() + thePlayer.getEyeHeight()),
-              diffZ = entity.getZ() - thePlayer.getZ();
-      final double dist = Mth.sqrt((float) (diffX * diffX + diffZ * diffZ));
-      final float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0D / Math.PI) - 90.0F;
-      final float pitch = (float) -(Math.atan2(diffY, dist) * 180.0D / Math.PI);
-      return new Rotation(
-              thePlayer.getYRot() + Mth.wrapDegrees(yaw - thePlayer.getYRot()),
-              thePlayer.getXRot() + Mth.wrapDegrees(pitch - thePlayer.getXRot())
-      );
-   }
-
-   public static Rotation getAngles(Entity entity) {
-      if (entity == null) return null;
-
-      final LocalPlayer thePlayer = mc.player;
-
-      if (thePlayer == null) return null;
-
-      final double diffX = entity.getX() - thePlayer.getX(),
-              diffY = entity.getY() + entity.getEyeHeight() * 0.9 - (thePlayer.getY() + thePlayer.getEyeHeight()),
-              diffZ = entity.getZ() - thePlayer.getZ();
-
-      final double dist = Mth.sqrt((float) (diffX * diffX + diffZ * diffZ));
-
-      final float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0D / Math.PI) - 90.0F;
-      final float pitch = (float) -(Math.atan2(diffY, dist) * 180.0D / Math.PI);
-
-      return new Rotation(
-              thePlayer.getYRot() + Mth.wrapDegrees(yaw - thePlayer.getYRot()),
-              thePlayer.getXRot() + Mth.wrapDegrees(pitch - thePlayer.getXRot())
-      );
-   }
-
-   public static boolean isInViewRange(float fov, LivingEntity entity) {
-      if (mc.player == null) return false;
-
-      Vec3 playerPos = mc.player.getEyePosition(1.0F);
-      Vec3 targetPos = new Vec3(entity.getX(), entity.getY() + entity.getBbHeight() * 0.5, entity.getZ());
-      Vec3 lookVec = mc.player.getLookAngle();
-      Vec3 toTargetVec = targetPos.subtract(playerPos).normalize();
-
-      double dotProduct = lookVec.dot(toTargetVec);
-      double angle = Math.toDegrees(Math.acos(dotProduct));
-
-      return fov == 360F || angle <= fov;
-   }
-
-
-   static {
-      try {
-         Field field = Unsafe.class.getDeclaredField("theUnsafe");
-         field.setAccessible(true);
-         unsafe = (Unsafe)field.get(null);
-      } catch (Exception var1) {
-         throw new RuntimeException(var1);
-      }
-   }
 
    public static float getAngleDifference(float a, float b) {
       return ((a - b) % 360.0F + 540.0F) % 360.0F - 180.0F;
@@ -402,23 +41,6 @@ public class RotationUtils {
       float fixedYaw = lastYaw + fixedDeltaYaw;
       float fixedPitch = lastPitch + fixedDeltaPitch;
       return new Vector2f(fixedYaw, fixedPitch);
-   }
-
-   public static Rotation getNCPRotations(Vec3 vec, boolean predict) {
-      Vec3 vec3 = new Vec3(
-              mc.player.getX(), mc.player.getBoundingBox().minY + (double) mc.player.getEyeHeight(mc.player.getPose()), mc.player.getZ()
-      );
-      if (predict) {
-         vec3.add(mc.player.getDeltaMovement().x, mc.player.getDeltaMovement().y, mc.player.getDeltaMovement().z);
-      }
-
-
-
-      double d0 = vec.x - vec3.x;
-      double d1 = vec.y + (double) mc.player.getBbHeight() / 2.0 - vec3.y;
-      double d2 = vec.z - vec3.z;
-      double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-      return new Rotation((float) (Math.atan2(d2, d0) * 180.0 / Math.PI) - 90.0F, (float) (-Math.atan2(d1, d3) * 180.0 / Math.PI));
    }
 
    public static Vec3 getLook(float yaw, float pitch) {
@@ -443,29 +65,11 @@ public class RotationUtils {
       return new Rotation(Mth.wrapDegrees(yaw), Mth.wrapDegrees(pitch));
    }
 
-   public static Rotation getNCPRotations2(final Vec3 vec, final boolean predict) {
-      final Vec3 eyesPos = new Vec3(mc.player.getX(), mc.player.getBoundingBox().minY + mc.player.getEyeHeight(mc.player.getPose()), mc.player.getZ());
-
-      if (predict) {
-         eyesPos.add(mc.player.getDeltaMovement().x, mc.player.getDeltaMovement().y, mc.player.getDeltaMovement().z);
-      }
-
-      final double diffX = vec.x - eyesPos.x;
-      final double diffY = vec.y + (mc.player.getBbHeight() / 2.0) - eyesPos.y;
-      final double diffZ = vec.z - eyesPos.z;
-      double hypotenuse = sqrt(diffX * diffX + diffZ * diffZ);
-
-      return new Rotation(
-              (float) (Math.atan2(diffZ, diffX) * 180.0 / Math.PI) - 90.0f,
-              (float) (-Math.atan2(diffY, hypotenuse) * 180.0 / Math.PI)
-      );
-   }
-
    public static Rotation getRotations(BlockPos pos, float partialTicks) {
       Vec3 playerVector = new Vec3(
-              mc.player.getX() + mc.player.getDeltaMovement().x * (double)partialTicks,
-              mc.player.getY() + (double)mc.player.getEyeHeight() + mc.player.getDeltaMovement().y * (double)partialTicks,
-              mc.player.getZ() + mc.player.getDeltaMovement().z * (double)partialTicks
+         mc.player.getX() + mc.player.getDeltaMovement().x * (double)partialTicks,
+         mc.player.getY() + (double)mc.player.getEyeHeight() + mc.player.getDeltaMovement().y() * (double)partialTicks,
+         mc.player.getZ() + mc.player.getDeltaMovement().z() * (double)partialTicks
       );
       double x = (double)pos.getX() - playerVector.x + 0.5;
       double y = (double)pos.getY() - playerVector.y + 0.5;
@@ -513,7 +117,7 @@ public class RotationUtils {
       Vec3 vec31 = getLook(rotations.x, rotations.y);
       Vec3 vec32 = eyePos.add(vec31.x * reach, vec31.y * reach, vec31.z * reach);
       return ProjectileUtil.getEntityHitResult(
-              mc.player, eyePos, vec32, targetBox, p_172770_ -> !p_172770_.isSpectator() && p_172770_.isPickable(), reach * reach
+         mc.player, eyePos, vec32, targetBox, p_172770_ -> !p_172770_.isSpectator() && p_172770_.isPickable(), reach * reach
       );
    }
 
@@ -567,7 +171,7 @@ public class RotationUtils {
       Vec3 vec32 = vec3.add(vec31.x * d0, vec31.y * d0, vec31.z * d0);
       AABB aabb = mc.player.getBoundingBox().expandTowards(vec31.scale(d0)).inflate(1.0, 1.0, 1.0);
       EntityHitResult entityhitresult = ProjectileUtil.getEntityHitResult(
-              mc.player, vec3, vec32, aabb, p_172770_ -> !p_172770_.isSpectator() && p_172770_.isPickable(), d1
+         mc.player, vec3, vec32, aabb, p_172770_ -> !p_172770_.isSpectator() && p_172770_.isPickable(), d1
       );
       if (entityhitresult != null) {
          Vec3 vec33 = entityhitresult.getLocation();
@@ -587,14 +191,6 @@ public class RotationUtils {
       float yawSin = (float)Math.sin((double)(-rotation.getYaw() * (float) (Math.PI / 180.0) - (float) Math.PI));
       float pitchCos = (float)(-Math.cos((double)(-rotation.getPitch() * (float) (Math.PI / 180.0))));
       float pitchSin = (float)Math.sin((double)(-rotation.getPitch() * (float) (Math.PI / 180.0)));
-      return new Vec3((double)(yawSin * pitchCos), (double)pitchSin, (double)(yawCos * pitchCos));
-   }
-
-   public static Vec3 getVectorForRotations(float yaw, float pitch) {
-      float yawCos = (float)Math.cos((double)(-yaw * (float) (Math.PI / 180.0) - (float) Math.PI));
-      float yawSin = (float)Math.sin((double)(-yaw * (float) (Math.PI / 180.0) - (float) Math.PI));
-      float pitchCos = (float)(-Math.cos((double)(-pitch * (float) (Math.PI / 180.0))));
-      float pitchSin = (float)Math.sin((double)(-pitch * (float) (Math.PI / 180.0)));
       return new Vec3((double)(yawSin * pitchCos), (double)pitchSin, (double)(yawCos * pitchCos));
    }
 
@@ -640,10 +236,10 @@ public class RotationUtils {
          if (checkHitResult(eyePos, bruteHitResult, target)) {
             Vec3 location = bruteHitResult.getLocation();
             return new RotationUtils.Data(
-                    eyePos,
-                    location,
-                    location.distanceTo(eyePos),
-                    getFixedRotation(bruteRotations.getYaw(), bruteRotations.getPitch(), RotationManager.lastRotations.x, RotationManager.lastRotations.y)
+               eyePos,
+               location,
+               location.distanceTo(eyePos),
+               getFixedRotation(bruteRotations.getYaw(), bruteRotations.getPitch(), RotationManager.lastRotations.x, RotationManager.lastRotations.y)
             );
          }
       }
@@ -712,155 +308,6 @@ public class RotationUtils {
 
    public static Vec3 getEyesPos() {
       return new Vec3(mc.player.getX(), mc.player.getY() + (double)mc.player.getEyeHeight(mc.player.getPose()), mc.player.getZ());
-   }
-
-   public static float rotateToPitch(float speed, float currentPitch, float targetPitch) {
-      float delta = Mth.wrapDegrees(targetPitch - currentPitch);
-      if (delta > speed) delta = speed;
-      if (delta < -speed) delta = -speed;
-      return currentPitch + delta;
-   }
-
-   public static float rotateToPitch(float pitchSpeed, float[] currentRots, float calcPitch) {
-      float pitch = rotateToPitch(
-              pitchSpeed + RandomUtils.nextFloat(0.0F, 15.0F),
-              currentRots[1],
-              calcPitch
-      );
-
-      if (pitch != calcPitch) {
-         pitch += (float) (RandomUtils.nextFloat(1.0F, 2.0F)
-                 * Math.sin(currentRots[0] * Math.PI));
-      }
-      return pitch;
-   }
-   public static Rotation toRotation(Vec3 vec, boolean predict) {
-      Vec3 vec3 = new Vec3(mc.player.getX(), mc.player.getBoundingBox().minY + (double) mc.player.getEyeHeight(), mc.player.getZ());
-      if (predict) {
-         vec3.add(mc.player.getDeltaMovement());
-      }
-
-      double d0 = vec.x - vec3.x;
-      double d1 = vec.y + (double) mc.player.getBbHeight() / 2.0 - vec3.y;
-      double d2 = vec.z - vec3.z;
-      return new Rotation(
-              Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(d2, d0)) - 90.0F), Mth.wrapDegrees((float) (-Math.toDegrees(Math.atan2(d1, Math.sqrt(d0 * d0 + d2 * d2)))))
-      );
-   }
-
-   public static double getRotationDifference(Entity entity) {
-      Rotation rotation = toRotation(getCenter(entity.getBoundingBox()), true);
-      return getRotationDifference(rotation, new Rotation(mc.player.getYRot(), mc.player.getXRot()));
-   }
-
-   public static double getRotationDifference(Rotation a, Rotation b) {
-      return Math.hypot((double) getAngleDifference(a.getYaw(), b.getYaw()), (double) (a.getPitch() - b.getPitch()));
-   }
-
-   public static double getRotationDifference(Rotation rotation) {
-      Rotation rotationx = new Rotation(mc.player.getYRot(), mc.player.getXRot());
-      return getRotationDifference(rotation, rotationx);
-   }
-
-   public static Vec3 getCenter(AABB bb) {
-      return new Vec3(bb.minX + (bb.maxX - bb.minX) * 0.5, bb.minY + (bb.maxY - bb.minY) * 0.5, bb.minZ + (bb.maxZ - bb.minZ) * 0.5);
-   }
-
-   public static void setTargetRotation(Rotation rotation, int keepLength) {
-      if (!Double.isNaN((double) rotation.getYaw())
-              && !Double.isNaN((double) rotation.getPitch())
-              && !(rotation.getPitch() > 90.0F)
-              && !(rotation.getPitch() < -90.0F)) {
-         targetRotation = rotation;
-         RotationUtils.keepLength = keepLength;
-      }
-   }
-
-   public static void reset() {
-      keepLength = 0;
-      targetRotation = null;
-   }
-
-   @EventTarget
-   private void onTick(TickEvent event) {
-      if (targetRotation != null) {
-         keepLength--;
-         if (keepLength <= 0) {
-            reset();
-         }
-      }
-
-      if (targetRotation != null) {
-         Rotation rotation = new Rotation(0.0F, 0.0F);
-         rotation.setYaw(targetRotation.getYaw());
-         rotation.setPitch(targetRotation.getPitch());
-      }
-   }
-
-   @EventTarget
-   private void onPacket(EventPacket event) {
-      if (event.getPacket() instanceof ServerboundMovePlayerPacket) {
-         ServerboundMovePlayerPacket packet = (ServerboundMovePlayerPacket) event.getPacket();
-         try {
-            // 使用反射访问受保护的字段
-            Field yRotField = findField(packet.getClass(), "yRot", "f_134121_");
-            Field xRotField = findField(packet.getClass(), "xRot", "f_134122_");
-            Field hasRotField = findField(packet.getClass(), "hasRot", "f_134123_");
-
-            if (targetRotation != null && (targetRotation.getYaw() != serverRotation.getYaw() || targetRotation.getPitch() != serverRotation.getPitch())) {
-               yRotField.setFloat(packet, targetRotation.getYaw());
-               xRotField.setFloat(packet, targetRotation.getPitch());
-               hasRotField.setBoolean(packet, true);
-            }
-
-            if (hasRotField.getBoolean(packet)) {
-               serverRotation = new Rotation(yRotField.getFloat(packet), xRotField.getFloat(packet));
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
-      }
-   }
-
-   @EventTarget
-   private void onMotion(MotionEvent event) {
-      if (targetRotation != null) {
-         event.setYaw(targetRotation.getYaw());
-         event.setPitch(targetRotation.getPitch());
-      }
-   }
-   private static Field findField(Class<?> clazz, String... fieldNames) {
-      if (clazz != null && fieldNames != null && fieldNames.length != 0) {
-         Exception failed = null;
-
-         for (Class<?> currentClass = clazz; currentClass != null; currentClass = currentClass.getSuperclass()) {
-            for (String fieldName : fieldNames) {
-               if (fieldName != null) {
-                  try {
-                     Field f = currentClass.getDeclaredField(fieldName);
-                     f.setAccessible(true);
-                     if ((f.getModifiers() & 16) != 0) {
-                        unsafe.putInt(f, (long)unsafe.arrayBaseOffset(boolean[].class), f.getModifiers() & -17);
-                     }
-                     return f;
-                  } catch (Exception var9) {
-                     failed = var9;
-                  }
-               }
-            }
-         }
-
-         throw new UnableToFindFieldException(failed);
-      } else {
-         throw new IllegalArgumentException("Class and fieldNames must not be null or empty");
-      }
-   }
-   private static class UnableToFindFieldException extends RuntimeException {
-      private static final long serialVersionUID = 1L;
-
-      public UnableToFindFieldException(Exception e) {
-         super(e);
-      }
    }
 
    public static class Data {
@@ -942,14 +389,14 @@ public class RotationUtils {
       @Override
       public String toString() {
          return "RotationUtils.Data(eye="
-                 + this.getEye()
-                 + ", hitVec="
-                 + this.getHitVec()
-                 + ", distance="
-                 + this.getDistance()
-                 + ", rotation="
-                 + this.getRotation()
-                 + ")";
+            + this.getEye()
+            + ", hitVec="
+            + this.getHitVec()
+            + ", distance="
+            + this.getDistance()
+            + ", rotation="
+            + this.getRotation()
+            + ")";
       }
    }
 }

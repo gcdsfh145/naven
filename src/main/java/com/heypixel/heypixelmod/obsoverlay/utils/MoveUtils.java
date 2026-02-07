@@ -2,7 +2,6 @@ package com.heypixel.heypixelmod.obsoverlay.utils;
 
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventMoveInput;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.LivingEntity;
 
 public class MoveUtils {
    private static final Minecraft mc = Minecraft.getInstance();
@@ -84,10 +83,5 @@ public class MoveUtils {
          || mc.options.keyRight.isDown()
          || mc.options.keyUp.isDown()
          || mc.options.keyDown.isDown();
-   }
-   public static float getSpeed(LivingEntity e) {
-      double d0 = e.getX() - e.xOld;
-      double d1 = e.getZ() - e.zOld;
-      return (float) Math.sqrt(d0 * d0 + d1 * d1);
    }
 }

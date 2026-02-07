@@ -8,7 +8,6 @@ public class EventPacket extends EventCancellable {
    private final EventType type;
    private Packet<?> packet;
 
-
    public EventType getType() {
       return this.type;
    }

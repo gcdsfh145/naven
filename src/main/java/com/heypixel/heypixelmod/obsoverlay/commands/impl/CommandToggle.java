@@ -23,10 +23,10 @@ public class CommandToggle extends Command {
             if (module != null) {
                module.toggle();
             } else {
-               ChatUtils.addChatMessage("Stupid you entered it wrong.");
+               ChatUtils.addChatMessage("Invalid module.");
             }
          } catch (NoSuchModuleException var4) {
-            ChatUtils.addChatMessage("Stupid you entered it wrong.");
+            ChatUtils.addChatMessage("Invalid module.");
          }
       }
    }

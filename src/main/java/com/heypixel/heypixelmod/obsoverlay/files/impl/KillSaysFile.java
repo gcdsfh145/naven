@@ -21,11 +21,7 @@ public class KillSaysFile extends ClientFile {
       "%s 你好可爱",
       "%s 别急",
       "%s 你已被清朝杀手陈安健害死！快使用Hack Lunar！",
-      "%s 你已被狂笑的蛇陈安健本人害死，快使用我编写的Hack Lunar端！",
-      "%s 一破，我騲霓嗎 ，连我你爹都打不过 你已被 少羽 客户端击毙",
-      "%s 双连，你马丝了，是不是畏惧你爹我了 你已被 少羽 客户端击毙",
-      "%s 三连，父母已故，v我91元火速复活 你已被 少羽 客户端击毙",
-      "%s 四连，家人已逝，你被我爹打退款了 你已被 少羽 客户端击毙"
+      "%s 你已被狂笑的蛇陈安健本人害死，快使用我编写的Hack Lunar端！"
    };
 
    public KillSaysFile() {
@@ -34,7 +30,7 @@ public class KillSaysFile extends ClientFile {
 
    @Override
    public void read(BufferedReader reader) throws IOException {
-      KillSay module = (KillSay) Naven.getInstance().getModuleManager().getModule(KillSay.class);
+      KillSay module = (KillSay)Naven.getInstance().getModuleManager().getModule(KillSay.class);
       List<BooleanValue> values = module.getValues();
 
       String line;
@@ -51,7 +47,7 @@ public class KillSaysFile extends ClientFile {
 
    @Override
    public void save(BufferedWriter writer) throws IOException {
-      KillSay module = (KillSay) Naven.getInstance().getModuleManager().getModule(KillSay.class);
+      KillSay module = (KillSay)Naven.getInstance().getModuleManager().getModule(KillSay.class);
 
       for (BooleanValue value : module.getValues()) {
          writer.write(value.getName() + "\n");

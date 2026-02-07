@@ -1,6 +1,6 @@
 package com.heypixel.heypixelmod.obsoverlay.modules.impl.move;
 
-import org.mixin.O.accessors.MultiPlayerGameModeAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.MultiPlayerGameModeAccessor;
 import com.heypixel.heypixelmod.obsoverlay.Naven;
 import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
 import com.heypixel.heypixelmod.obsoverlay.events.api.types.EventType;
@@ -55,11 +55,6 @@ public class AutoMLG extends Module {
       return collisions.iterator().hasNext();
    }
 
-    @EventTarget
-    public void onEnable() {
-        super.onEnable();
-    }
-
    @EventTarget
    public void onPre(EventRunTicks e) {
       if (e.getType() == EventType.PRE && mc.player != null) {
@@ -95,7 +90,7 @@ public class AutoMLG extends Module {
             this.above = ((BlockHitResult)mc.hitResult).getBlockPos().above();
             this.useItem(mc.player, mc.level, InteractionHand.MAIN_HAND);
          } else {
-            Notification notification = new Notification(NotificationLevel.WARNING, "未能放置水!", 3000L);
+            Notification notification = new Notification(NotificationLevel.WARNING, "Failed to place water!", 3000L);
             Naven.getInstance().getNotificationManager().addNotification(notification);
             this.rotation = false;
          }
@@ -105,7 +100,7 @@ public class AutoMLG extends Module {
          if (above.equals(this.above)) {
             this.useItem(mc.player, mc.level, InteractionHand.MAIN_HAND);
          } else {
-            Notification notification = new Notification(NotificationLevel.WARNING, "Failure to recycle water!", 3000L);
+            Notification notification = new Notification(NotificationLevel.WARNING, "Failed to recycle the water dues to moving!", 3000L);
             Naven.getInstance().getNotificationManager().addNotification(notification);
          }
 

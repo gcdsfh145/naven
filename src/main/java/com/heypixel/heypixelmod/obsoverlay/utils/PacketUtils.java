@@ -1,6 +1,6 @@
 package com.heypixel.heypixelmod.obsoverlay.utils;
 
-import org.mixin.O.accessors.ClientLevelAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.ClientLevelAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.multiplayer.prediction.PredictiveAction;

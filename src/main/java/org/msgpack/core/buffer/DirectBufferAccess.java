@@ -32,6 +32,7 @@ class DirectBufferAccess {
          mInvokeCleaner = (Method)obj;
       }
    }
+
    private static Object getCleanerMethod(ByteBuffer direct) {
       try {
          Method m = direct.getClass().getDeclaredMethod("cleaner");

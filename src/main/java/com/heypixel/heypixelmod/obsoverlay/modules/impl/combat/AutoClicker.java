@@ -1,6 +1,6 @@
 package com.heypixel.heypixelmod.obsoverlay.modules.impl.combat;
 
-import org.mixin.O.accessors.MinecraftAccessor;
+import com.heypixel.heypixelmod.mixin.O.accessors.MinecraftAccessor;
 import com.heypixel.heypixelmod.obsoverlay.events.api.EventTarget;
 import com.heypixel.heypixelmod.obsoverlay.events.api.types.EventType;
 import com.heypixel.heypixelmod.obsoverlay.events.impl.EventMotion;
@@ -32,10 +32,6 @@ public class AutoClicker extends Module {
    private final BooleanValue itemCheck = ValueBuilder.create(this, "Item Check").setDefaultBooleanValue(true).build().getBooleanValue();
    private float counter = 0.0F;
 
-   @EventTarget
-   public void onEnable() {
-    super.onEnable();
-}
    @EventTarget
    public void onMotion(EventMotion e) {
       if (e.getType() == EventType.PRE) {

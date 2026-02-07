@@ -1,17 +1,12 @@
 package com.heypixel.heypixelmod.obsoverlay.utils;
 
-import com.google.common.collect.Multimap;
 import com.heypixel.heypixelmod.obsoverlay.modules.impl.move.Scaffold;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
@@ -33,7 +28,6 @@ import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SkullBlock;
 
@@ -51,29 +45,7 @@ public class InventoryUtils {
       });
    }
 
-    public static double getItemDamage(ItemStack stack) {
-        double damage = 0.0;
-        Multimap<Attribute, AttributeModifier> attributeModifierMap = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
-
-        for (Attribute attributeName : attributeModifierMap.keySet()) {
-            if (attributeName.getDescriptionId().equals("attribute.name.generic.attack_damage")) {
-                Iterator<AttributeModifier> attributeModifiers = attributeModifierMap.get(attributeName).iterator();
-                if (attributeModifiers.hasNext()) {
-                    damage += attributeModifiers.next().getAmount();
-                }
-                break;
-            }
-        }
-
-        if (stack.hasFoil()) {
-            damage += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_ASPECT, stack);
-            damage += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, stack) * 1.25;
-        }
-
-        return damage;
-    }
-
-    public static boolean isGoldenHead(ItemStack e) {
+   public static boolean isGoldenHead(ItemStack e) {
       if (e.isEmpty()) {
          return false;
       } else {
@@ -86,18 +58,6 @@ public class InventoryUtils {
 
          return false;
       }
-   }
-
-   public static int findItem(int startSlot, int endSlot, Item item) {
-      if (InventoryUtils.mc.player == null) {
-         return -1;
-      }
-      for (int i = startSlot; i < endSlot; ++i) {
-         ItemStack stack = InventoryUtils.mc.player.getInventory().getItem(i);
-         if (stack.isEmpty() || stack.getItem() != item) continue;
-         return i;
-      }
-      return -1;
    }
 
    public static boolean isSharpnessAxe(ItemStack stack) {

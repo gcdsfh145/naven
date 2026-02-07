@@ -23,8 +23,7 @@ public class SpammerFile extends ClientFile {
       "羡慕我不会被封吗？因为我狂笑的蛇本人陈安健制作了花雨庭的反作弊！",
       "B站搜索狂笑的蛇将写散文，看我陈安健精彩集锦！",
       "我狂笑的蛇陈安健能无视反作弊，因为花雨庭反作弊就是我做的！",
-      "哈哈你知道你为什么会被误封吗？因为我狂笑的蛇陈安健制作了花雨庭反作弊！",
-      "少羽牛逼！"
+      "哈哈你知道你为什么会被误封吗？因为我狂笑的蛇陈安健制作了花雨庭反作弊！"
    };
 
    public SpammerFile() {
@@ -33,7 +32,7 @@ public class SpammerFile extends ClientFile {
 
    @Override
    public void read(BufferedReader reader) throws IOException {
-      Spammer module = (Spammer) Naven.getInstance().getModuleManager().getModule(Spammer.class);
+      Spammer module = (Spammer)Naven.getInstance().getModuleManager().getModule(Spammer.class);
       List<BooleanValue> values = module.getValues();
 
       String line;
@@ -50,7 +49,7 @@ public class SpammerFile extends ClientFile {
 
    @Override
    public void save(BufferedWriter writer) throws IOException {
-      Spammer module = (Spammer) Naven.getInstance().getModuleManager().getModule(Spammer.class);
+      Spammer module = (Spammer)Naven.getInstance().getModuleManager().getModule(Spammer.class);
 
       for (BooleanValue value : module.getValues()) {
          writer.write(value.getName() + "\n");

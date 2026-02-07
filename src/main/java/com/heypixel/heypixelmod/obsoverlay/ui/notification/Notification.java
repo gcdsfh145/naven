@@ -26,7 +26,6 @@ public class Notification {
       RenderUtils.drawRoundedRect(stack, x + 2.0F, y + 4.0F, this.getWidth(), 20.0F, 5.0F, this.level.getColor());
    }
 
-
    public void render(PoseStack stack, float x, float y) {
       StencilUtils.write(false);
       RenderUtils.drawRoundedRect(stack, x + 2.0F, y + 4.0F, this.getWidth(), 20.0F, 5.0F, this.level.getColor());
