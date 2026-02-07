@@ -1,4 +1,4 @@
-name: build CI
+name: naven
 on:
   workflow_dispatch:
   
@@ -19,8 +19,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Grant Execute  for gradlew
+        run: cd NavenAlpha 
+        
       - name: Grant Execute Permission for gradlew
-        run: cd NavenAlpha && chmod +x gradlew
+        run: chmod +x gradlew
 
       - name: Build
         run: ./gradlew build
