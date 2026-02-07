@@ -20,7 +20,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant Execute Permission for gradlew
-        run: chmod +x gradlew
+        run: cd NavenAlpha && chmod +x gradlew
 
       - name: Build
         run: ./gradlew build
